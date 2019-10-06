@@ -18,34 +18,35 @@ __global__ void _3Dstencil_sharedMemory(float *d_e,float *d_r,int X,int Y,int Z,
     extern __shared__ float fatia[];
 
     //printf("X = %d || Y = %d\n",x,y);
+    float *Zdata = new float[k+1];
+    int z=0;
+    Zdata[k/2] = d_e[x + ( y * (X) ) + ( z* (X*Y) )];
+    for(int lk =1;lk<(k/2)+1;lk++)
+    {
+        int h_e_i;
+        if(z+lk >= Z)
+            h_e_i = (x) + ( (y) * (X) ) + ( (z-lk) * (X*Y) );
+        else
+            h_e_i = (x) + ( (y) * (X) ) + ( (z+lk) * (X*Y) );
+        Zdata[k+1-lk] = d_e[h_e_i];
+
+        if(z-lk < 0)
+            h_e_i = (x) + ( (y) * (X) ) + ( (z+lk) * (X*Y) );
+        else
+            h_e_i = (x) + ( (y) * (X) ) + ( (z-lk) * (X*Y) );
+        Zdata[lk-1] = d_e[h_e_i];
+
+    }
     for(int z=0;  z<Z;  z++)
     {
         
         int h_r_i = x + ( y * (X) ) + ( z* (X*Y) );
         //fatia[(k/2+threadIdx.x) + (k/2+threadIdx.y)*(blockDim.x+k)] = d_r[h_r_i];
         fatia[threadIdx.x + threadIdx.y*blockDim.x] = d_e[h_r_i];
-        float *Zdata = new float[k+1];
-        Zdata[k/2] = d_e[h_r_i];
-        for(int lk =1;lk<(k/2)+1;lk++)
-        {
-            
-            int h_e_i;
-            if(z+lk >= Z)
-                h_e_i = (x) + ( (y) * (X) ) + ( (z-lk) * (X*Y) );
-            else
-                h_e_i = (x) + ( (y) * (X) ) + ( (z+lk) * (X*Y) );
-            Zdata[k+1-lk] = d_e[h_e_i];
-
-            if(z-lk < 0)
-                h_e_i = (x) + ( (y) * (X) ) + ( (z+lk) * (X*Y) );
-            else
-                h_e_i = (x) + ( (y) * (X) ) + ( (z-lk) * (X*Y) );
-            Zdata[lk-1] = d_e[h_e_i];
-
-        }
+        
         __syncthreads();
-
-        if(blockIdx.x==0 && threadIdx.x==2 && threadIdx.y==2 && z==3)
+        
+        /*if(blockIdx.x==0 && threadIdx.x==2 && threadIdx.y==2 && z==3)
         {
             printf("\n\n");
             printf("d_e[(x) + ( (y) * (X) ) + ( (z+lk) * (X*Y) )] = %f\n",d_e[(x) + ( (y) * (X) ) + ( (z+1) * (X*Y) )]);
@@ -62,7 +63,7 @@ __global__ void _3Dstencil_sharedMemory(float *d_e,float *d_r,int X,int Y,int Z,
                 }
                 printf("\n");
             }
-        }
+        }*/
            
         
         
@@ -110,7 +111,19 @@ __global__ void _3Dstencil_sharedMemory(float *d_e,float *d_r,int X,int Y,int Z,
                     h_e_i = (x) + ( (y) * (X) ) + ( (z-lk) * (X*Y) );
                 d_r[h_r_i] += d_e[h_e_i];
 
-            }  
+            }
+         if(z==Z-1)
+            break;   
+        for(int i=0;i<k;i++)
+            Zdata[i]=Zdata[i+1];
+        int lk=k/2;
+        if(z+1+lk >= Z)
+            h_e_i = (x) + ( (y) * (X) ) + ( (z+1-lk) * (X*Y) );
+        else
+            h_e_i = (x) + ( (y) * (X) ) + ( (z+1+lk) * (X*Y) );
+        Zdata[k] = d_e[h_e_i];
+
+        
     }
 
 
@@ -214,7 +227,7 @@ int main(int argc, char* argv[]) {
                     int h_r_i = x + ( y * (X) ) + ( z* (X*Y) );
                         
                     int h_e_i = h_r_i;
-                    printf(" %f",h_e[h_e_i]);
+                    //printf(" %f",h_e[h_e_i]);
                     h_r_test[h_r_i] = h_e[h_e_i];
                     for(int lk =1;lk<(k/2)+1;lk++)
                         {
@@ -261,9 +274,9 @@ int main(int argc, char* argv[]) {
 
                         }  
                 }
-                printf("\n");
+                //printf("\n");
             }
-            printf("-----\n\n");
+            //printf("-----\n\n");
         }
 
         for (int i = 0; i < tam; i++) 
