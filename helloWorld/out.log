@@ -1,0 +1,13 @@
+==30854== NVPROF is profiling process 30854, command: ./a.out
+==30854== Profiling application: ./a.out
+==30854== Profiling result:
+            Type  Time(%)      Time     Calls       Avg       Min       Max  Name
+ GPU activities:  100.00%  218.37us         1  218.37us  218.37us  218.37us  mykernel(void)
+      API calls:   99.54%  198.01ms         1  198.01ms  198.01ms  198.01ms  cudaLaunch
+                    0.26%  522.70us        94  5.5600us     168ns  278.15us  cuDeviceGetAttribute
+                    0.12%  239.05us         1  239.05us  239.05us  239.05us  cudaDeviceSynchronize
+                    0.05%  89.828us         1  89.828us  89.828us  89.828us  cuDeviceTotalMem
+                    0.02%  48.083us         1  48.083us  48.083us  48.083us  cuDeviceGetName
+                    0.00%  7.5140us         1  7.5140us  7.5140us  7.5140us  cudaConfigureCall
+                    0.00%  1.7350us         3     578ns     235ns  1.1700us  cuDeviceGetCount
+                    0.00%  1.2460us         2     623ns     255ns     991ns  cuDeviceGet
