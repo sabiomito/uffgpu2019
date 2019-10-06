@@ -73,30 +73,30 @@ __global__ void _3Dstencil_sharedMemory(float *d_e,float *d_r,int X,int Y,int Z,
         d_r[h_r_i] = Zdata[k/2];
         for(int lk =1;lk<(k/2)+1;lk++)
             {
-                if(x+lk >= X)
-                    h_e_i = (x-lk) + ( (y) * (X) ) + ( (z) * (X*Y) );
+                if(threadIdx.x+lk >= blockDim.x)
+                    h_e_i = threadIdx.x-lk + threadIdx.y*blockDim.x;
                 else
-                    h_e_i = (x+lk) + ( (y) * (X) ) + ( (z) * (X*Y) );
-                d_r[h_r_i] += d_e[h_e_i];
+                    h_e_i = threadIdx.x+lk + threadIdx.y*blockDim.x;
+                d_r[h_r_i] += fatia[h_e_i];
 
-                if(x-lk < 0)
-                    h_e_i = (x+lk) + ( (y) * (X) ) + ( (z) * (X*Y) );
+                if((int)threadIdx.x-lk < 0)
+                    h_e_i = threadIdx.x+lk + threadIdx.y*blockDim.x;
                 else
-                    h_e_i = (x-lk) + ( (y) * (X) ) + ( (z) * (X*Y) );
-                d_r[h_r_i] += d_e[h_e_i];
+                    h_e_i = threadIdx.x-lk + threadIdx.y*blockDim.x;
+                d_r[h_r_i] += fatia[h_e_i];
 
 
-                if(y+lk >= Y)
-                    h_e_i = (x) + ( (y-lk) * (X) ) + ( (z) * (X*Y) );
+                if(threadIdx.y+lk >= blockDim.y)
+                    h_e_i = threadIdx.x + (threadIdx.y-lk)*blockDim.x;
                 else
-                    h_e_i = (x) + ( (y+lk) * (X) ) + ( (z) * (X*Y) );
-                d_r[h_r_i] += d_e[h_e_i];
+                    h_e_i = threadIdx.x + (threadIdx.y+lk)*blockDim.x;
+                d_r[h_r_i] += fatia[h_e_i];
 
-                if(y-lk < 0)
-                    h_e_i = (x) + ( (y+lk) * (X) ) + ( (z) * (X*Y) );
+                if((int)threadIdx.y-lk < 0)
+                    h_e_i = threadIdx.x + (threadIdx.y+lk)*blockDim.x;
                 else
-                    h_e_i = (x) + ( (y-lk) * (X) ) + ( (z) * (X*Y) );
-                d_r[h_r_i] += d_e[h_e_i];
+                    h_e_i = threadIdx.x + (threadIdx.y-lk)*blockDim.x;
+                d_r[h_r_i] += fatia[h_e_i];
 
 
                 
