@@ -70,7 +70,7 @@ __global__ void _3Dstencil_sharedMemory(float *d_e,float *d_r,int X,int Y,int Z,
         
         
         int h_e_i = h_r_i;
-        d_r[h_r_i] = d_e[h_e_i];
+        d_r[h_r_i] = Zdata[k/2];
         for(int lk =1;lk<(k/2)+1;lk++)
             {
                 if(x+lk >= X)
@@ -99,17 +99,9 @@ __global__ void _3Dstencil_sharedMemory(float *d_e,float *d_r,int X,int Y,int Z,
                 d_r[h_r_i] += d_e[h_e_i];
 
 
-                if(z+lk >= Z)
-                    h_e_i = (x) + ( (y) * (X) ) + ( (z-lk) * (X*Y) );
-                else
-                    h_e_i = (x) + ( (y) * (X) ) + ( (z+lk) * (X*Y) );
-                d_r[h_r_i] += d_e[h_e_i];
-
-                if(z-lk < 0)
-                    h_e_i = (x) + ( (y) * (X) ) + ( (z+lk) * (X*Y) );
-                else
-                    h_e_i = (x) + ( (y) * (X) ) + ( (z-lk) * (X*Y) );
-                d_r[h_r_i] += d_e[h_e_i];
+                
+                d_r[h_r_i] += Zdata[k+1-lk];
+                d_r[h_r_i] += Zdata[lk-1];
 
             }
          if(z==Z-1)
