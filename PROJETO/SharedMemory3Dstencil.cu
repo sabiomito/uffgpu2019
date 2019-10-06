@@ -5,7 +5,7 @@
 #include <math.h>
 using namespace std;
 
-__global__ void _3Dstencil_global(float *d_e,float *d_r,int X,int Y,int Z,int k){
+__global__ void _3Dstencil_sharedMemory(float *d_e,float *d_r,int X,int Y,int Z,int k){
 
     //int thread_id = threadIdx.x + blockIdx.x * blockDim.x;
     //printf("sou id %d || threadIdx.x %d || blockIdx.x %d || blockDim.x %d \n",thread_id,threadIdx.x ,blockIdx.x,blockDim.x);
@@ -14,13 +14,63 @@ __global__ void _3Dstencil_global(float *d_e,float *d_r,int X,int Y,int Z,int k)
     int x,y;
     x = threadIdx.x + (blockIdx.x*blockDim.x);
     y = threadIdx.y + (blockIdx.y*blockDim.y);
+
+    extern __shared__ float fatia[];
+
     //printf("X = %d || Y = %d\n",x,y);
     for(int z=0;  z<Z;  z++)
-    {           
+    {
+        
         int h_r_i = x + ( y * (X) ) + ( z* (X*Y) );
+        //fatia[(k/2+threadIdx.x) + (k/2+threadIdx.y)*(blockDim.x+k)] = d_r[h_r_i];
+        fatia[threadIdx.x + threadIdx.y*blockDim.x] = d_e[h_r_i];
+        float *Zdata = new float[k+1];
+        Zdata[k/2] = d_e[h_r_i];
+        for(int lk =1;lk<(k/2)+1;lk++)
+        {
+            
+            int h_e_i;
+            if(z+lk >= Z)
+                h_e_i = (x) + ( (y) * (X) ) + ( (z-lk) * (X*Y) );
+            else
+                h_e_i = (x) + ( (y) * (X) ) + ( (z+lk) * (X*Y) );
+            Zdata[k+1-lk] = d_e[h_e_i];
+
+            if(z-lk < 0)
+                h_e_i = (x) + ( (y) * (X) ) + ( (z+lk) * (X*Y) );
+            else
+                h_e_i = (x) + ( (y) * (X) ) + ( (z-lk) * (X*Y) );
+            Zdata[lk-1] = d_e[h_e_i];
+
+        }
+        __syncthreads();
+
+        if(blockIdx.x==0 && threadIdx.x==2 && threadIdx.y==2 && z==3)
+        {
+            printf("\n\n");
+            printf("d_e[(x) + ( (y) * (X) ) + ( (z+lk) * (X*Y) )] = %f\n",d_e[(x) + ( (y) * (X) ) + ( (z+1) * (X*Y) )]);
+            printf("d_e[h_r_i] = %f\n",d_e[h_r_i]);
+            printf("d_e[(x) + ( (y) * (X) ) + ( (z-lk) * (X*Y) )] = %f\n",d_e[(x) + ( (y) * (X) ) + ( (z-1) * (X*Y) )]);
+            for(int i=0;i<k+1;i++)
+            printf("Zdata[%d] = %f\n",i,Zdata[i]);
+            printf("\nFATIA\n");
+            for(int i=0;i<blockDim.x;i++)
+            {
+                for(int j=0;j<blockDim.y;j++)
+                {
+                    printf(" %f",fatia[i+j*blockDim.x]);
+                }
+                printf("\n");
+            }
+        }
+           
+        
+        
+        
+        
         int h_e_i = h_r_i;
         d_r[h_r_i] = d_e[h_e_i];
-        for(int lk =0;lk<(k/2);lk++)
+        for(int lk =1;lk<(k/2)+1;lk++)
             {
                 if(x+lk >= X)
                     h_e_i = (x-lk) + ( (y) * (X) ) + ( (z) * (X*Y) );
@@ -49,15 +99,15 @@ __global__ void _3Dstencil_global(float *d_e,float *d_r,int X,int Y,int Z,int k)
 
 
                 if(z+lk >= Z)
-                    h_e_i = (x) + ( (y-lk) * (X) ) + ( (z) * (X*Y) );
-                else
                     h_e_i = (x) + ( (y) * (X) ) + ( (z-lk) * (X*Y) );
+                else
+                    h_e_i = (x) + ( (y) * (X) ) + ( (z+lk) * (X*Y) );
                 d_r[h_r_i] += d_e[h_e_i];
 
                 if(z-lk < 0)
-                    h_e_i = (x) + ( (y) * (X) ) + ( (z-lk) * (X*Y) );
+                    h_e_i = (x) + ( (y) * (X) ) + ( (z+lk) * (X*Y) );
                 else
-                    h_e_i = (x) + ( (y-lk) * (X) ) + ( (z) * (X*Y) );
+                    h_e_i = (x) + ( (y) * (X) ) + ( (z-lk) * (X*Y) );
                 d_r[h_r_i] += d_e[h_e_i];
 
             }  
@@ -77,7 +127,7 @@ int main(int argc, char* argv[]) {
 
     float *h_e,*h_r,*h_r_test;
     float *d_e, *d_r;
-    int size,tam,times;
+    int size,tam,times,sharedSize;
     clock_t Ticks[2];
 
     
@@ -126,6 +176,8 @@ int main(int argc, char* argv[]) {
     dim3 block_dim(BX,BY,1);
     dim3 grid_dim(GX,GY,1);
 
+    //sharedSize = (block_dim.x*block_dim.y + k*block_dim.x + k*block_dim.y)*sizeof(float);
+    sharedSize = block_dim.x*block_dim.y*sizeof(float);
     size = X * Y * Z * sizeof(float);
     tam = X * Y * Z;
 
@@ -158,11 +210,13 @@ int main(int argc, char* argv[]) {
                 {
                     
                     
+                    
                     int h_r_i = x + ( y * (X) ) + ( z* (X*Y) );
                         
                     int h_e_i = h_r_i;
+                    printf(" %f",h_e[h_e_i]);
                     h_r_test[h_r_i] = h_e[h_e_i];
-                    for(int lk =0;lk<(k/2);lk++)
+                    for(int lk =1;lk<(k/2)+1;lk++)
                         {
                             
 
@@ -194,21 +248,22 @@ int main(int argc, char* argv[]) {
 
 
                             if(z+lk >= Z)
-                                h_e_i = (x) + ( (y-lk) * (X) ) + ( (z) * (X*Y) );
-                            else
                                 h_e_i = (x) + ( (y) * (X) ) + ( (z-lk) * (X*Y) );
+                            else
+                                h_e_i = (x) + ( (y) * (X) ) + ( (z+lk) * (X*Y) );
                             h_r_test[h_r_i] += h_e[h_e_i];
 
                             if(z-lk < 0)
-                                h_e_i = (x) + ( (y) * (X) ) + ( (z-lk) * (X*Y) );
+                                h_e_i = (x) + ( (y) * (X) ) + ( (z+lk) * (X*Y) );
                             else
-                                h_e_i = (x) + ( (y-lk) * (X) ) + ( (z) * (X*Y) );
+                                h_e_i = (x) + ( (y) * (X) ) + ( (z-lk) * (X*Y) );
                             h_r_test[h_r_i] += h_e[h_e_i];
 
                         }  
                 }
+                printf("\n");
             }
-            
+            printf("-----\n\n");
         }
 
         for (int i = 0; i < tam; i++) 
@@ -228,7 +283,7 @@ int main(int argc, char* argv[]) {
     *** Kernel Call ***
     *******************/
     //_3Dstencil_global<<<blks,th_p_blk>>>(d_e,d_r,X,Y,Z);
-    _3Dstencil_global<<<grid_dim,block_dim>>>(d_e,d_r,X,Y,Z,k);
+    _3Dstencil_sharedMemory<<<grid_dim,block_dim,sharedSize>>>(d_e,d_r,X,Y,Z,k);
 
     cudaError_t err = cudaSuccess;
     err = cudaGetLastError();
@@ -253,7 +308,7 @@ int main(int argc, char* argv[]) {
     
     Ticks[1] = clock();
     double Tempo = (Ticks[1] - Ticks[0]) * 1000.0 / CLOCKS_PER_SEC;
-    printf("X %d || Y %d \nBX %d || BY %d\nZ %d \n",X,Y,BX,BY,Z);
+    printf("X %d || Y %d \nBX %d || BY %d\nGX %d || GY %d\nZ %d \n",X,Y,BX,BY,GX,GY,Z);
     printf ("[%d,%.5f,%.5f],\n", tam,elapsedTime,Tempo);
  
     cudaMemcpy(h_r, d_r, size, cudaMemcpyDeviceToHost);
