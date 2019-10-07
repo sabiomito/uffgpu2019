@@ -7,11 +7,6 @@ printf("Oi GPU\n");
 
 int main(void)
 {
-int *a,*b,*c;
-int *d_a,*d_b,*d_c;
-
-cudaMalloc((void)
-
 
 mykernel<<<2,5>>>();
 cudaDeviceSynchronize();
