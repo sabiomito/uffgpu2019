@@ -100,9 +100,12 @@ int main(int argc, char* argv[]) {
 
     //CUDA_CALL(cudaMemcpy(d_data,h_data, size, cudaMemcpyHostToDevice));
 
-    int rStreams = 10;
+    int rStreams = 4;
     dim3 block_dim_temp = dim3(32,32,1);
     dim3 grid_dim_temp = dim3(ceil(L/32),ceil((L/rStreams)/32),1);
+    if(grid_dim_temp.y<1)
+        grid_dim_temp = dim3(grid_dim_temp.x,1,1);
+    //printf("\n grid_dim_temp - %d , %d, %d \n",grid_dim_temp.x,grid_dim_temp.y,grid_dim_temp.z);
     vector<cudaStream_t> streams;
     /* Kernel Call */
     for(int oy=0; oy < L; oy+=L/rStreams)
