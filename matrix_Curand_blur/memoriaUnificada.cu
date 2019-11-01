@@ -13,6 +13,10 @@
     printf("Error at %s:%d\n",__FILE__,__LINE__);\
     return EXIT_FAILURE;}} while(0)
 /**
+- memoria unificada
+[10000,0.02410],
+[1000000,0.12742],
+[100000000,10.52038],
 1- Gerar uma matriz aleatoria
 2- Aplicar um blur ou filtro (gerar uma nova matriz de saida, com a media aritimetica da vizinhanca aplicada a cada elemento da matriz)
 3- Testar e mandar resultados de tempo para os segintes casos:
@@ -25,10 +29,10 @@
 __global__ void blur(unsigned int origData[],unsigned result[],int L) {
 
 
-    int thread_idx = threadIdx.x + blockIdx.x * blockDim.x;
+    int thread_idx = ox+threadIdx.x + blockIdx.x * blockDim.x;
     int thread_idy = threadIdx.y + blockIdx.y * blockDim.y;
     
-    
+
     if(thread_idx-1 >= 0 && thread_idx+1 < L && thread_idy-1 >= 0 && thread_idy+1 < L)
     {
         int temp = origData[(thread_idx) + (thread_idy)*L];
@@ -56,7 +60,7 @@ __global__ void blur(unsigned int origData[],unsigned result[],int L) {
 *2 - threads por bloco
 */
 int main(int argc, char* argv[]) {
-    unsigned int L, tam, *h_data,*d_data,*d_res;
+    unsigned int L, tam, *data,*res;
     size_t size;
     curandGenerator_t gen;
     cudaError_t err = cudaSuccess;
@@ -66,6 +70,14 @@ int main(int argc, char* argv[]) {
 
     tam = L*L;
     size = tam*sizeof(unsigned int);
+    cudaMallocManaged(&data,size);
+    cudaMallocManaged(&res,size);
+
+    
+    cudaEvent_t start, stop;
+    CUDA_CALL(cudaEventCreate (&start));
+    CUDA_CALL(cudaEventCreate (&stop));
+    CUDA_CALL(cudaEventRecord (start, 0)); // 0 is the stream number
 
     dim3 block_dim(L,L,1);
     dim3 grid_dim(1,1,1);
@@ -76,21 +88,10 @@ int main(int argc, char* argv[]) {
     }
     
 
-    // Allocate memory for the vectors on host memory.
-    h_data = (unsigned int*) malloc(size);
-
-    for (int i = 0; i < tam; i++)
-        h_data[i] = 0;
-    
-    
-
-    /* Allocate vectors in device memory */
-    CUDA_CALL(cudaMalloc(&d_data, size));
-    CUDA_CALL(cudaMalloc(&d_res, size));
 
     CURAND_CALL(curandCreateGenerator(&gen,CURAND_RNG_PSEUDO_DEFAULT));
     CURAND_CALL(curandSetPseudoRandomGeneratorSeed(gen,time(NULL)));
-    CURAND_CALL(curandGenerate(gen,d_data, tam));
+    CURAND_CALL(curandGenerate(gen,data, tam));
     
 
 
@@ -98,16 +99,10 @@ int main(int argc, char* argv[]) {
 
 
 
-    CUDA_CALL(cudaMemcpy(h_data, d_data, size, cudaMemcpyDeviceToHost));
-
-    cudaEvent_t start, stop;
-    CUDA_CALL(cudaEventCreate (&start));
-    CUDA_CALL(cudaEventCreate (&stop));
-    CUDA_CALL(cudaEventRecord (start, 0)); // 0 is the stream number
     // do Work…
     
     /* Kernel Call */
-    blur<<<grid_dim,block_dim>>>(d_data, d_res, L);
+    blur<<<grid_dim,block_dim>>>(data,res, L);
     err = cudaGetLastError();
 
     if (err != cudaSuccess)
@@ -129,13 +124,11 @@ int main(int argc, char* argv[]) {
     CUDA_CALL(cudaEventDestroy(stop));
     
  
-    CUDA_CALL(cudaMemcpy(h_data, d_res, size, cudaMemcpyDeviceToHost));
     
     /* Free device memory */
-    CUDA_CALL( cudaFree(d_data));
-    CUDA_CALL( cudaFree(d_res));
-    /* Free host memory */
-    free(h_data);
+    CUDA_CALL( cudaFree(data));
+    CUDA_CALL( cudaFree(res));
+
 
     return 0;
 } /* main */
