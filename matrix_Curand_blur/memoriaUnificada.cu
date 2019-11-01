@@ -29,7 +29,7 @@
 __global__ void blur(unsigned int origData[],unsigned result[],int L) {
 
 
-    int thread_idx = ox+threadIdx.x + blockIdx.x * blockDim.x;
+    int thread_idx = threadIdx.x + blockIdx.x * blockDim.x;
     int thread_idy = threadIdx.y + blockIdx.y * blockDim.y;
     
 
@@ -79,6 +79,9 @@ int main(int argc, char* argv[]) {
     CUDA_CALL(cudaEventCreate (&stop));
     CUDA_CALL(cudaEventRecord (start, 0)); // 0 is the stream number
 
+    for(int i=0; i<tam;i++)
+        data[i]=0;
+
     dim3 block_dim(L,L,1);
     dim3 grid_dim(1,1,1);
     if(L>32)
@@ -113,8 +116,11 @@ int main(int argc, char* argv[]) {
     
     CUDA_CALL(cudaDeviceSynchronize());
     
-    CUDA_CALL(cudaEventRecord (stop, 0));
+   
+    for(int i=0; i<tam;i++)
+        data[i]=0;
     
+    CUDA_CALL(cudaEventRecord (stop, 0));
     CUDA_CALL(cudaEventSynchronize (stop));
     
     float elapsedTime;

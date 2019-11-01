@@ -78,15 +78,19 @@ int main(int argc, char* argv[]) {
 
     // Allocate memory for the vectors on host memory.
     h_data = (unsigned int*) malloc(size);
-
-    for (int i = 0; i < tam; i++)
-        h_data[i] = 0;
-    
-    
-
+      
     /* Allocate vectors in device memory */
     CUDA_CALL(cudaMalloc(&d_data, size));
     CUDA_CALL(cudaMalloc(&d_res, size));
+
+    cudaEvent_t start, stop;
+    CUDA_CALL(cudaEventCreate (&start));
+    CUDA_CALL(cudaEventCreate (&stop));
+    CUDA_CALL(cudaEventRecord (start, 0)); // 0 is the stream number
+    // do Work…
+  
+    for(int i=0; i<tam;i++)
+        h_data[i]=0;
 
     CURAND_CALL(curandCreateGenerator(&gen,CURAND_RNG_PSEUDO_DEFAULT));
     CURAND_CALL(curandSetPseudoRandomGeneratorSeed(gen,time(NULL)));
@@ -100,12 +104,7 @@ int main(int argc, char* argv[]) {
 
     CUDA_CALL(cudaMemcpy(h_data, d_data, size, cudaMemcpyDeviceToHost));
 
-    cudaEvent_t start, stop;
-    CUDA_CALL(cudaEventCreate (&start));
-    CUDA_CALL(cudaEventCreate (&stop));
-    CUDA_CALL(cudaEventRecord (start, 0)); // 0 is the stream number
-    // do Work…
-    
+  
     /* Kernel Call */
     blur<<<grid_dim,block_dim>>>(d_data, d_res, L);
     err = cudaGetLastError();
@@ -116,20 +115,25 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
     
+
+    CUDA_CALL(cudaMemcpy(h_data, d_res, size, cudaMemcpyDeviceToHost));
+
     CUDA_CALL(cudaDeviceSynchronize());
+
+    for(int i=0; i<tam;i++)
+        h_data[i]=0;
     
     CUDA_CALL(cudaEventRecord (stop, 0));
     
     CUDA_CALL(cudaEventSynchronize (stop));
-    
+
+   
+
     float elapsedTime;
     CUDA_CALL(cudaEventElapsedTime (&elapsedTime, start, stop));
     printf ("[%d,%.5f],\n", tam,elapsedTime);
     CUDA_CALL(cudaEventDestroy(start));
     CUDA_CALL(cudaEventDestroy(stop));
-    
- 
-    CUDA_CALL(cudaMemcpy(h_data, d_res, size, cudaMemcpyDeviceToHost));
     
     /* Free device memory */
     CUDA_CALL( cudaFree(d_data));
