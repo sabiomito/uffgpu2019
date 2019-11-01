@@ -58,7 +58,6 @@ __global__ void blur(unsigned int origData[],unsigned result[],int L) {
 int main(int argc, char* argv[]) {
     unsigned int L, tam, *h_data,*d_data,*d_res;
     size_t size;
-    curandGenerator_t gen;
     cudaError_t err = cudaSuccess;
     L = 40;
     if(argc > 1)
@@ -89,20 +88,13 @@ int main(int argc, char* argv[]) {
     CUDA_CALL(cudaEventRecord (start, 0)); // 0 is the stream number
     // do Work…
   
+    srand(time(NULL));
     for(int i=0; i<tam;i++)
-        h_data[i]=0;
-
-    CURAND_CALL(curandCreateGenerator(&gen,CURAND_RNG_PSEUDO_DEFAULT));
-    CURAND_CALL(curandSetPseudoRandomGeneratorSeed(gen,time(NULL)));
-    CURAND_CALL(curandGenerate(gen,d_data, tam));
-    
-
-
-    CUDA_CALL(cudaDeviceSynchronize());
+        h_data[i]=rand();
 
 
 
-    CUDA_CALL(cudaMemcpy(h_data, d_data, size, cudaMemcpyDeviceToHost));
+    CUDA_CALL(cudaMemcpy(d_data,h_data, size, cudaMemcpyHostToDevice));
 
   
     /* Kernel Call */

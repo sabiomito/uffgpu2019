@@ -109,7 +109,7 @@ int main(int argc, char* argv[]) {
     {
         streams.push_back(cudaStream_t());
         cudaStreamCreate(&streams.back());
-        cudaMemcpyAsync (d_data, h_data+(oy*L),(L/rStreams*L)*sizeof(unsigned int), cudaMemcpyHostToDevice,streams.back());
+        cudaMemcpyAsync (d_data+(oy*L), h_data+(oy*L),(L/rStreams*L)*sizeof(unsigned int), cudaMemcpyHostToDevice,streams.back());
     }
     for(int oy=0,i=0; oy < L; oy+=L/rStreams,i++)
         if(i==0)
@@ -117,7 +117,10 @@ int main(int argc, char* argv[]) {
         else
             blur<<<grid_dim_temp,block_dim_temp,0,streams[i]>>>(d_data, d_res, L+1, 0, oy-1);
             
-
+    for(int oy=0,i=0; oy < L; oy+=L/rStreams,i++)
+    {
+        cudaMemcpyAsync (h_data+(oy*L),d_data+(oy*L),(L/rStreams*L)*sizeof(unsigned int), cudaMemcpyDeviceToHost,streams[i]);
+    }
     err = cudaGetLastError();
     if (err != cudaSuccess)
     {
@@ -126,7 +129,7 @@ int main(int argc, char* argv[]) {
     }
 
 
-    CUDA_CALL(cudaMemcpy(h_data, d_res, size, cudaMemcpyDeviceToHost));
+    
 
     CUDA_CALL(cudaDeviceSynchronize());
 
