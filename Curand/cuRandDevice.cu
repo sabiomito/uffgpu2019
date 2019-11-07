@@ -8,7 +8,11 @@
 #include <fstream>
 using namespace std;
 
+#define CURAND_CALL(x) do { if((x)!=CURAND_STATUS_SUCCESS) { \
+    printf("Error at %s:%d\n",__FILE__,__LINE__);\
+    return EXIT_FAILURE;}} while(0)
 
+    
  __global__ void setup_kernel(curandState *state,unsigned long long seed)
  {
      int id = threadIdx.x + blockIdx.x * blockDim.x;

@@ -6,6 +6,12 @@
 #include <string>
 #include <fstream>
 using namespace std;
+
+#define CURAND_CALL(x) do { if((x)!=CURAND_STATUS_SUCCESS) { \
+    printf("Error at %s:%d\n",__FILE__,__LINE__);\
+    return EXIT_FAILURE;}} while(0)
+
+
 int main(int argc, char* argv[]) {
     int *h_data,*d_data,L,tam,print;
     size_t size;
@@ -50,7 +56,12 @@ int main(int argc, char* argv[]) {
 
     cudaMalloc((void **)&d_data, size);
 
-    curandCreateGenerator(&gen,type);
+    if( curandCreateGenerator(&gen,type) != CURAND_STATUS_SUCCESS)
+    {
+        printf("Error at %s:%d\n",__FILE__,__LINE__);
+        return EXIT_FAILURE;
+    }
+    
     curandSetPseudoRandomGeneratorSeed(gen,0);
     curandGenerate(gen,(unsigned int *)d_data, size);
 
@@ -74,7 +85,7 @@ int main(int argc, char* argv[]) {
    
 	
 	out.close();
-
+    curandDestroyGenerator(gen);
     /* Free host memory */
     free(h_data);
     cudaFree(d_data);

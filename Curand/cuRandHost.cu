@@ -6,6 +6,11 @@
 #include <string>
 #include <fstream>
 using namespace std;
+
+#define CURAND_CALL(x) do { if((x)!=CURAND_STATUS_SUCCESS) { \
+    printf("Error at %s:%d\n",__FILE__,__LINE__);\
+    return EXIT_FAILURE;}} while(0)
+    
 int main(int argc, char* argv[]) {
     int *h_data,L,tam,print;
     size_t size;
@@ -46,7 +51,7 @@ int main(int argc, char* argv[]) {
     printf("\n\n");
 
    
-	
+	curandDestroyGenerator(gen);
 	out.close();
 
     /* Free host memory */
