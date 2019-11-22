@@ -14,7 +14,6 @@ using namespace std;
 *4 - print
 */
 int main(int argc, char* argv[]) {
-int th_p_blk;
 int *h_e,*h_r;
 int size,tam;
 int X=16;
@@ -48,23 +47,11 @@ for(int i=0;i<(k/2+1);i++)
     c_coeff[(k/2+1)-i-1]=(float)i/(float)(k/2+1);
 
 FILE *arq;
-int i;
 arq = fopen("entrada.txt", "rt");
 for(int i=0;i<X;i++)
     for(int j=0;j<Y;j++)
         fscanf(arq," %d",&h_e[i+j*X]);
 fclose(arq);
-
-// for(int i=0;i<X;i++)
-// {
-//     for(int j=0;j<Y;j++)
-//     {
-//         printf(" %d",h_e[i+j*X]);
-//     }
-//     printf("\n"); 
-// }
-
-
 
 
 for(int t=0;t<times;t++)
