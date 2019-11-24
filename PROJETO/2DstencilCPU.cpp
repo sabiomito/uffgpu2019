@@ -43,8 +43,13 @@ tam = X * Y ;
 h_e = (int*) malloc(size);
 h_r = (int*) malloc(size);
 c_coeff = (float*)malloc((k/2+1)*sizeof(float));
+printf("\n coefs \n");
 for(int i=0;i<(k/2+1);i++)
+{
     c_coeff[(k/2+1)-i-1]=(float)i/(float)(k/2+1);
+    printf(" %f",c_coeff[(k/2+1)-i-1]);
+}
+printf("\n coefs \n");
 
 FILE *arq;
 arq = fopen("entrada.txt", "rt");
@@ -63,33 +68,33 @@ for(int t=0;t<times;t++)
         {
             int h_r_i = x + ( y * (X) );
             int h_e_i = h_r_i;
-            h_r[h_r_i] = h_e[h_e_i];
+            h_r[h_r_i] = h_e[h_e_i]*c_coeff[0];
             for(int lk = 1;lk<(k/2)+1;lk++)
                 {
                     if(x+lk >= X)
                         h_e_i = (x-lk) + ( (y) * (X) );
                     else
                         h_e_i = (x+lk) + ( (y) * (X) );
-                    h_r[h_r_i] += h_e[h_e_i]*c_coeff[lk-1];
+                    h_r[h_r_i] += h_e[h_e_i]*c_coeff[lk];
 
                     if(x-lk < 0)
                         h_e_i = (x+lk) + ( (y) * (X) );
                     else
                         h_e_i = (x-lk) + ( (y) * (X) );
-                    h_r[h_r_i] += h_e[h_e_i]*c_coeff[lk-1];
+                    h_r[h_r_i] += h_e[h_e_i]*c_coeff[lk];
 
 
                     if(y+lk >= Y)
                         h_e_i = (x) + ( (y-lk) * (X) );
                     else
                         h_e_i = (x) + ( (y+lk) * (X) );
-                    h_r[h_r_i] += h_e[h_e_i]*c_coeff[lk-1];
+                    h_r[h_r_i] += h_e[h_e_i]*c_coeff[lk];
 
                     if(y-lk < 0)
                         h_e_i = (x) + ( (y+lk) * (X) );
                     else
                         h_e_i = (x) + ( (y-lk) * (X) );
-                    h_r[h_r_i] += h_e[h_e_i]*c_coeff[lk-1];
+                    h_r[h_r_i] += h_e[h_e_i]*c_coeff[lk];
 
                 }  
         }

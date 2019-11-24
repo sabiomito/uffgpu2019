@@ -5,10 +5,10 @@
 #include <math.h>
 using namespace std;
 
-__global__ void _copy_dr_to_de(int *d_e,int *d_r,int X,int Y){
+__global__ void _copy_dr_to_de(int *d_e,int *d_r,int X,int Y,int k2){
     int x,y;
-    x = threadIdx.x + (blockIdx.x*blockDim.x);
-    y = threadIdx.y + (blockIdx.y*blockDim.y);
+    x = threadIdx.x + (blockIdx.x*blockDim.x)+k2;
+    y = threadIdx.y + (blockIdx.y*blockDim.y)+k2;
     int h_r_i = x + ( y * (X) );
     if(x<X && y<Y)
     d_e[h_r_i] = d_r[h_r_i];
@@ -16,41 +16,29 @@ __global__ void _copy_dr_to_de(int *d_e,int *d_r,int X,int Y){
 __global__ void _2Dstencil_global(int *d_e,int *d_r,float *c_coeff,int X,int Y,int k){
 
     int x,y;
+    int k2=k/2;
     x = threadIdx.x + (blockIdx.x*blockDim.x);
     y = threadIdx.y + (blockIdx.y*blockDim.y);
+
+    x+=k2;
+    y+=k2;
     int h_r_i = x + ( y * (X) );
     int h_e_i = h_r_i;
     d_r[h_r_i] = d_e[h_e_i]*c_coeff[0];
-    for(int lk = 1;lk<(k/2)+1;lk++)
+    for(int lk =1;lk<(k/2)+1;lk++)
     {
-        if(x+lk >= X)
-            h_e_i = (x-lk) + ( (y) * (X) );
-        else
-            h_e_i = (x+lk) + ( (y) * (X) );
+        h_e_i = (x+lk) + ( (y) * (X) );
         d_r[h_r_i] += d_e[h_e_i]*c_coeff[lk];
 
-        if(x-lk < 0)
-            h_e_i = (x+lk) + ( (y) * (X) );
-        else
-            h_e_i = (x-lk) + ( (y) * (X) );
+        h_e_i = (x-lk) + ( (y) * (X) );
         d_r[h_r_i] += d_e[h_e_i]*c_coeff[lk];
 
-
-        if(y+lk >= Y)
-            h_e_i = (x) + ( (y-lk) * (X) );
-        else
-            h_e_i = (x) + ( (y+lk) * (X) );
+        h_e_i = (x) + ( (y+lk) * (X) );
         d_r[h_r_i] += d_e[h_e_i]*c_coeff[lk];
 
-        if(y-lk < 0)
-            h_e_i = (x) + ( (y+lk) * (X) );
-        else
-            h_e_i = (x) + ( (y-lk) * (X) );
+        h_e_i = (x) + ( (y-lk) * (X) );
         d_r[h_r_i] += d_e[h_e_i]*c_coeff[lk];
-
-    }  
-
-
+    }
 }
 
 
@@ -95,12 +83,13 @@ if(Y>32)
     BY = 32;
 }
     
-
+int k2=k/2;
 dim3 block_dim(BX,BY,1);
 dim3 grid_dim(GX,GY,1);
 
-size = X * Y * sizeof(int);
+size = (X+k) * (Y+k) * sizeof(int);
 tam = X * Y;
+
 
 
 h_e = (int*) malloc(size);
@@ -121,11 +110,27 @@ printf("\n coefs \n");
 
 FILE *arq;
 arq = fopen("entrada.txt", "rt");
-for(int i=0;i<X;i++)
-    for(int j=0;j<Y;j++)
-        fscanf(arq," %d",&h_e[i+j*X]);
+for(int i=k2;i<(X+k2);i++)
+    for(int j=k2;j<(Y+k2);j++)
+        fscanf(arq," %d",&h_e[i+j*(X+k)]);
 fclose(arq);
 
+for(int i=k2;i<(X+k2);i++)
+    for(int j=1;j<k2+1;j++)
+    {
+        h_e[i+(k2-j)*(X+k)] = h_e[i+(k2+j-1)*(X+k)];
+        h_e[i+(Y+k2+j-1)*(X+k)] =  h_e[i+(Y+k2-j)*(X+k)] ;
+    }
+
+for(int i=1;i<k2+1;i++)
+    for(int j=k2;j<(X+k2);j++)
+    {
+        h_e[(k2-i)+(j)*(X+k)] = h_e[(k2+i-1)+(j)*(X+k)];
+        h_e[(X+k2+i-1)+(j)*(X+k)] =  h_e[(X+k2-i)+(j)*(X+k)];
+    }
+
+       
+        
 
 /* Copy vectors from host memory to device memory */
 cudaMemcpy(d_e, h_e, size, cudaMemcpyHostToDevice);
@@ -143,8 +148,8 @@ cudaEventRecord (start, 0);
 //_3Dstencil_global<<<blks,th_p_blk>>>(d_e,d_r,X,Y,Z);
 for(int t=0;t<times;t++)
 {
-_2Dstencil_global<<<grid_dim,block_dim>>>(d_e,d_r,d_c_coeff,X,Y,k);
-_copy_dr_to_de<<<grid_dim,block_dim>>>(d_e,d_r,X,Y);
+_2Dstencil_global<<<grid_dim,block_dim>>>(d_e,d_r,d_c_coeff,X+k,Y+k,k);
+_copy_dr_to_de<<<grid_dim,block_dim>>>(d_e,d_r,X+k,Y+k,k/2);
 }
 cudaError_t err = cudaSuccess;
 err = cudaGetLastError();
@@ -174,15 +179,26 @@ if (err != cudaSuccess)
 
     
 arq = fopen("resultado.txt", "wt");
-for(int i=0;i<X;i++)
+for(int i=k2;i<X+k2;i++)
 {
-    for(int j=0;j<Y;j++)
+    for(int j=k2;j<Y+k2;j++)
     {
-      fprintf(arq," %d",h_r[i+j*X]);
+      fprintf(arq," %d",h_r[i+j*(X+k)]);
     }
     fprintf(arq,"\n");
 }
 fclose(arq);
+
+// arq = fopen("resultado.txt", "wt");
+// for(int i=0;i<X+k;i++)
+// {
+//     for(int j=0;j<Y+k;j++)
+//     {
+//       fprintf(arq," %d",h_e[i+j*(X+k)]);
+//     }
+//     fprintf(arq,"\n");
+// }
+// fclose(arq);
 
 
     cudaFree(d_e);

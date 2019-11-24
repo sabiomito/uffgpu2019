@@ -15,42 +15,35 @@ __global__ void _copy_dr_to_de(int *d_e,int *d_r,int X,int Y){
 }
 __global__ void _2Dstencil_global(int *d_e,int *d_r,float *c_coeff,int X,int Y,int k){
 
-    int x,y;
+    int x,y,h_e_i,h_r_i,temp;
     x = threadIdx.x + (blockIdx.x*blockDim.x);
     y = threadIdx.y + (blockIdx.y*blockDim.y);
-    int h_r_i = x + ( y * (X) );
-    int h_e_i = h_r_i;
-    d_r[h_r_i] = d_e[h_e_i]*c_coeff[0];
+    h_r_i = x + ( y * (X) );
+    temp = d_e[h_r_i]*c_coeff[0];
     for(int lk = 1;lk<(k/2)+1;lk++)
     {
-        if(x+lk >= X)
-            h_e_i = (x-lk) + ( (y) * (X) );
-        else
+        if(x+lk < X)
+        {
             h_e_i = (x+lk) + ( (y) * (X) );
-        d_r[h_r_i] += d_e[h_e_i]*c_coeff[lk];
-
-        if(x-lk < 0)
-            h_e_i = (x+lk) + ( (y) * (X) );
-        else
+            temp += d_e[h_e_i]*c_coeff[lk];
+        }
+        if(x-lk >= 0)
+        {
             h_e_i = (x-lk) + ( (y) * (X) );
-        d_r[h_r_i] += d_e[h_e_i]*c_coeff[lk];
-
-
-        if(y+lk >= Y)
-            h_e_i = (x) + ( (y-lk) * (X) );
-        else
+            temp += d_e[h_e_i]*c_coeff[lk];
+        }
+        if(y+lk < Y)
+        {
             h_e_i = (x) + ( (y+lk) * (X) );
-        d_r[h_r_i] += d_e[h_e_i]*c_coeff[lk];
-
-        if(y-lk < 0)
-            h_e_i = (x) + ( (y+lk) * (X) );
-        else
+            temp += d_e[h_e_i]*c_coeff[lk];
+        }
+        if(y-lk >= 0)
+        {
             h_e_i = (x) + ( (y-lk) * (X) );
-        d_r[h_r_i] += d_e[h_e_i]*c_coeff[lk];
-
-    }  
-
-
+            temp += d_e[h_e_i]*c_coeff[lk];
+        }
+    }
+    d_r[h_r_i] = temp;  
 }
 
 
