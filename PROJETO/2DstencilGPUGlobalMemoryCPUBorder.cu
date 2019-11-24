@@ -102,8 +102,12 @@ cudaMalloc(&d_c_coeff,(k/2+1)*sizeof(float));
 printf("\n coefs \n");
 for(int i=0;i<(k/2+1);i++)
 {
-    c_coeff[(k/2+1)-i-1]=(float)i/(float)(k/2+1);
-    printf(" %f",c_coeff[(k/2+1)-i-1]);
+    c_coeff[i]=(float)((k/2+1)-i)/(float)(k/2+1);
+   
+}
+for(int i=0;i<(k/2+1);i++)
+{
+    printf(" %f",c_coeff[i]);
 }
 printf("\n coefs \n");
 

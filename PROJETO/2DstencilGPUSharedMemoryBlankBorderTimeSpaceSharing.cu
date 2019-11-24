@@ -5,14 +5,6 @@
 #include <math.h>
 using namespace std;
 
-__global__ void _copy_dr_to_de(int *d_e,int *d_r,int X,int Y){
-    int x,y;
-    x = threadIdx.x + (blockIdx.x*blockDim.x);
-    y = threadIdx.y + (blockIdx.y*blockDim.y);
-    int h_r_i = x + ( y * (X) );
-    if(x<X && y<Y)
-        d_e[h_r_i] = d_r[h_r_i];
-}
 __device__ void _2Dstencil_(int *d_e,int *d_r,float* c_coeff,int X,int Y,int k, int x, int y,int GX,int Gx,int Gy)
 {     
     int h_e_i;
@@ -37,19 +29,21 @@ __device__ void _2Dstencil_(int *d_e,int *d_r,float* c_coeff,int X,int Y,int k, 
      h_r_i = Gx + ( (Gy) * (GX) );
     d_r[h_r_i] = temp;    
 }
-__global__ void _2Dstencil_global(int *d_e,int *d_r,float *c_coeff,int X,int Y,int k,int sharedTam){
+__global__ void _2Dstencil_global(int *d_e,int *d_r,float *c_coeff,int X,int Y,int k,int times){
 
     int x,y;//,h_e_i,h_r_i,Xs,Ys,Dx,Dy;
     x = threadIdx.x + (blockIdx.x*blockDim.x);
     y = threadIdx.y + (blockIdx.y*blockDim.y);
-    int k2 = k/2;
+    int k2 = k/2*times;
     extern __shared__ int shared[];
+    
     int blockThreadIndex = threadIdx.x + threadIdx.y*blockDim.x;
     // Xs = threadIdx.x;
     // Ys = threadIdx.y;
-    int Dx = blockDim.x+k;
-    int Dy = blockDim.y+k;
-
+    int Dx = blockDim.x+(k*times);
+    int Dy = blockDim.y+(k*times);
+    int sharedTam = Dx*Dy;
+    int * sharedRes = &shared[sharedTam];
     
     for(int stride=blockThreadIndex;stride<sharedTam;stride+=(blockDim.x*blockDim.y))
     {
@@ -61,8 +55,38 @@ __global__ void _2Dstencil_global(int *d_e,int *d_r,float *c_coeff,int X,int Y,i
        
     }
     __syncthreads();
+    for(int t=times-1;t>0;t--)
+    {  
+        //_2Dstencil_(shared,sharedRes,c_coeff,Dx,Dy,k,threadIdx.x+k2,threadIdx.y+k2,Dx,threadIdx.x+k2,threadIdx.y+k2);
+        int tDx = blockDim.x+(t*k);
+        int tDy = blockDim.y+(t*k);
+        int tk2 = (times-t)*k/2;
+        // int tDx = blockDim.x+(1*k);
+        // int tDy = blockDim.y+(1*k);
+        // int tk2 = (1)*k/2;
+        int tSharedTam = tDx * tDy;
+        for(int stride=blockThreadIndex;stride<tSharedTam;stride+=(blockDim.x*blockDim.y))
+        {
+            _2Dstencil_(shared,sharedRes,c_coeff,Dx,Dy,k,(stride%tDx)+tk2,(stride/tDx)+tk2,Dx,(stride%tDx)+tk2,(stride/tDx)+tk2);
+        }
+        __syncthreads();
+        for(int stride=blockThreadIndex;stride<sharedTam;stride+=(blockDim.x*blockDim.y))
+        {
+            shared[stride]=sharedRes[stride];
+        }
+        __syncthreads();
+   }
+   
     _2Dstencil_(shared,d_r,c_coeff,Dx,Dy,k,threadIdx.x+k2,threadIdx.y+k2,X,x,y);
-    
+   
+    // for(int stride=blockThreadIndex;stride<sharedTam;stride+=(blockDim.x*blockDim.y))
+    // {
+    //     int globalIdx = (blockIdx.x*blockDim.x)-k2+stride%Dx + ((blockIdx.y*blockDim.y)-k2+stride/Dx)*X;
+    //     if(globalIdx > 0 && (blockIdx.x*blockDim.x)-k2+stride%Dx < X && ((blockIdx.y*blockDim.y)-k2+stride/Dx)<Y)
+    //     d_r[globalIdx] = sharedRes[stride];
+       
+    // }
+        
 }
 
 
@@ -111,8 +135,8 @@ if(Y>32)
 dim3 block_dim(BX,BY,1);
 dim3 grid_dim(GX,GY,1);
 //sharedSize = ((block_dim.x+k)*(block_dim.y+k))*sizeof(int);
-sharedSize = ((block_dim.x+k)*(block_dim.y+k))*sizeof(int);
-sharedTam = ((block_dim.x+k)*(block_dim.y+k));
+sharedSize = ((block_dim.x+(k*times))*(block_dim.y+(k*times)))*sizeof(int)*2;
+//sharedTam = ((block_dim.x+(k*2))*(block_dim.y+(k*2)));
 size = X * Y * sizeof(int);
 tam = X * Y;
 
@@ -159,11 +183,8 @@ cudaEventRecord (start, 0);
 *** Kernel Call ***
 *******************/
 //_3Dstencil_global<<<blks,th_p_blk>>>(d_e,d_r,X,Y,Z);
-for(int t=0;t<times;t++)
-{
-_2Dstencil_global<<<grid_dim,block_dim,sharedSize>>>(d_e,d_r,d_c_coeff,X,Y,k,sharedTam);
-_copy_dr_to_de<<<grid_dim,block_dim>>>(d_e,d_r,X,Y);
-}
+_2Dstencil_global<<<grid_dim,block_dim,sharedSize>>>(d_e,d_r,d_c_coeff,X,Y,k,times);
+
 cudaError_t err = cudaSuccess;
 err = cudaGetLastError();
 if (err != cudaSuccess)
