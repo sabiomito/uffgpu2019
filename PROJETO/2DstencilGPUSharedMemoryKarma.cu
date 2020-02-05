@@ -21,7 +21,7 @@
 #define VOLT0 3.0f
 
 //==> DISCRETE DOMAIN <==//
-#define MODEL_WIDTH 1024
+#define MODEL_WIDTH 64
 #define MODELSIZE_X (MODEL_WIDTH)
 #define MODELSIZE_Y (MODEL_WIDTH)
 #define MODELSIZE_Z 1
@@ -84,6 +84,7 @@ __global__ void timeStep( const float *voltIN, float *v, float *voltOUT )
         U[0][j] = voltIN[(idx - (x>0) + (x==0))];
         else if ( threadIdx.x == (BLOCKDIM_X-1) )
         U[(BLOCKDIM_X+1)][j] = voltIN[(idx + (x<MODELSIZE_X-1)-(x==MODELSIZE_X-1))];
+        
 
         float Rn = ( 1.0f / ( 1.0f - expf(-Re) ) ) - rv;
         float p = ( U[i][j] > En ) * 1.0f;
@@ -145,7 +146,7 @@ int main( int argc, char *argv[] )
     //         //
     //         hv[idx] = 0.5f;
     //         //
-    //         if ( y < 10*(MODELSIZE_Y/20) && y > 8*(MODELSIZE_Y/20) )
+    //         if ( y < 10*(MODELSIZE_Y/20) && y > 8*(MODELSIZE_Y/20) && x < 10*(MODELSIZE_Y/20) &&  x > 8*(MODELSIZE_Y/20))
     //         hvolt[idx] = VOLT0;
     //         else
     //         hvolt[idx] = 0.0f;
@@ -176,7 +177,7 @@ int main( int argc, char *argv[] )
 
 
     dim3 point;
-    int pointIdx;
+    //int pointIdx;
     point.x = MODELSIZE_X/2;
     point.y = MODELSIZE_Y/2;
     point.z = 0;
@@ -204,7 +205,8 @@ int main( int argc, char *argv[] )
     //int j = nsteps/nsamples;
     cudaDeviceSynchronize();
     cudaEventRecord( dstart, 0 );
-    for ( int i = 0; i < nsteps; i++ ) 
+    int i=0;
+    for (i = 0; i < nsteps; i++ ) 
     {
         if ( (i%2) == 0 ) //==> EVEN
         timeStep<<<blocks, threads>>>( dvoltA, dv, dvoltB );
@@ -226,7 +228,12 @@ int main( int argc, char *argv[] )
     cudaEventElapsedTime( &elapsed, dstart, dstop );
     printf("GPU elapsed time: %f s (%f milliseconds)\n", (elapsed/1000.0), elapsed);
 
+    if ( (i%2) == 0 )
     HANDLE_ERROR( cudaMemcpy( hvolt, dvoltB, MODELSIZE2D*sizeof(float), cudaMemcpyDeviceToHost ) );
+    else
+    HANDLE_ERROR( cudaMemcpy( hvolt, dvoltA, MODELSIZE2D*sizeof(float), cudaMemcpyDeviceToHost ) );
+
+
     arq = fopen("resultado.txt", "wt");
     for(int i=0;i<MODELSIZE_X;i++)
     {
