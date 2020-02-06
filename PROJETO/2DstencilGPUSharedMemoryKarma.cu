@@ -21,7 +21,7 @@
 #define VOLT0 3.0f
 
 //==> DISCRETE DOMAIN <==//
-#define MODEL_WIDTH 64
+#define MODEL_WIDTH 96
 #define MODELSIZE_X (MODEL_WIDTH)
 #define MODELSIZE_Y (MODEL_WIDTH)
 #define MODELSIZE_Z 1

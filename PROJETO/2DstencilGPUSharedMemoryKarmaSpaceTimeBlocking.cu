@@ -47,7 +47,7 @@ __device__ void destinyTest(float *d_r,int GX, int Gx, int Gy,float val)
 {
     d_r[Gx + ((Gy) * (GX))] = val;
 }
-__device__ void _2Dstencil_(float *d_e, float *d_r, float *d_v, float *c_coeff, int X, int Y, int k, int x, int y, int GX, int Gx, int Gy)
+__device__ void _2Dstencil_(float *d_e, float *d_r, float *d_v, float *c_coeff, int X, int k, int x, int y, int GX, int Gx, int Gy)
 {
     int h_e_i;
     int h_r_i = x + (y * (X));
@@ -130,18 +130,13 @@ __global__ void _2Dstencil_global(float *d_e, float *d_r, float *d_v, float *c_c
     */
     for (int stride = blockThreadIndex; stride < sharedTam; stride += (blockDim.x * blockDim.y))
     {
-        int globalIdx = (blockIdx.x * blockDim.x) - k2 + stride % Dx + ((blockIdx.y * blockDim.y) - k2 + int(stride / Dx)) * X;
-        if((blockIdx.x * blockDim.x) - k2 + stride % Dx >= 0 && (blockIdx.x * blockDim.x) - k2 + stride % Dx % X < X && ((blockIdx.y  * blockDim.y) - k2 + int(stride / Dx)) >= 0 && ((blockIdx.y  * blockDim.y) - k2 + int(stride / Dx)) < Y)
-                 {  
-                        shared[stride] = d_e[globalIdx];
-                        sharedV[stride] = d_v[globalIdx];
-                 }
-                 else
-                 {
-                    globalIdx = (blockIdx.x * blockDim.x) + stride % Dx + ((blockIdx.y * blockDim.y) + int(stride / Dx)) * X;
-                    shared[stride]=d_e[globalIdx];
-                 }
-            
+         
+         int globalIdxX = (blockIdx.x * blockDim.x) - k2 + stride % Dx;
+         int globalIdxY = ((blockIdx.y * blockDim.y) - k2 + int(stride / Dx));
+         int globalIdx = globalIdxX + (globalIdxX==-1) - (globalIdxX==X)      +      (globalIdxY + (globalIdxY==-1) - (globalIdxY==Y)) * X;
+      
+        shared[stride] = d_e[globalIdx];
+        sharedV[stride] = d_v[globalIdx];
     }
 
     __syncthreads();
@@ -163,7 +158,7 @@ __global__ void _2Dstencil_global(float *d_e, float *d_r, float *d_v, float *c_c
         {
             //int globalIdx = (stride % tDx) + tk2 + Dx*(int(stride / Dx)) + tk2;
             //destinyTest(shared, Dx, (stride % tDx) + tk2, int(stride / Dx) + tk2,t+1);
-            _2Dstencil_(shared, sharedRes, sharedV, c_coeff, Dx, Dy, k, (stride % tDx) + tk2, (int(stride / Dx)) + tk2, Dx, (stride % tDx) + tk2, (int(stride / Dx)) + tk2);
+            _2Dstencil_(shared, sharedRes, sharedV, c_coeff, Dx, k, (stride % tDx) + tk2, (int(stride / Dx)) + tk2, Dx, (stride % tDx) + tk2, (int(stride / Dx)) + tk2);
         }
         __syncthreads();
         for (int stride = blockThreadIndex; stride < sharedTam; stride += (blockDim.x * blockDim.y))
@@ -175,7 +170,7 @@ __global__ void _2Dstencil_global(float *d_e, float *d_r, float *d_v, float *c_c
     /*
     Envia pra ser calculado todos os elementos do ultimo instante de tempo
    */
-    _2Dstencil_(shared, d_r, sharedV, c_coeff, Dx, Dy, k, threadIdx.x + k2, threadIdx.y + k2, X, x, y);
+    //_2Dstencil_(shared, d_r, sharedV, c_coeff, Dx, k, threadIdx.x + k2, threadIdx.y + k2, X, x, y);
     
     //  for(int stride=blockThreadIndex;stride<sharedTam;stride+=(blockDim.x*blockDim.y))
     // {
@@ -185,14 +180,15 @@ __global__ void _2Dstencil_global(float *d_e, float *d_r, float *d_v, float *c_c
     //  }
     
     //destinyTest(d_r,X, x, y,1.0f);
-    //__syncthreads();
-    // for (int stride = blockThreadIndex; stride < sharedTam; stride += (blockDim.x * blockDim.y))
-    // {
-    //     int globalIdx = (0 * blockDim.x) - k2 + stride % Dx + ((0 * blockDim.y) - k2 + int(stride / Dx)) * X;
-    //     if((0 * blockDim.x) - k2 + stride % Dx >= 0 && (0 * blockDim.x) - k2 + stride % Dx % X < X && ((0 * blockDim.y) - k2 + int(stride / Dx)) >= 0 && ((0 * blockDim.y) - k2 + int(stride / Dx)) < Y)
-    //         d_r[globalIdx] = shared[stride];
-       
-    // }
+    __syncthreads();
+    for (int stride = blockThreadIndex; stride < sharedTam; stride += (blockDim.x * blockDim.y))
+    {
+         int globalIdxX = (blockIdx.x * blockDim.x) - k2 + stride % Dx;
+         int globalIdxY = ((blockIdx.y * blockDim.y) - k2 + int(stride / Dx));
+         int globalIdx = globalIdxX + (globalIdxX==-1) - (globalIdxX==X)      +      (globalIdxY + (globalIdxY==-1) - (globalIdxY==Y)) * X;
+         if(blockIdx.x == 1 && blockIdx.y == 1)
+            d_r[globalIdx] = shared[stride];
+    }
    
 }
 
