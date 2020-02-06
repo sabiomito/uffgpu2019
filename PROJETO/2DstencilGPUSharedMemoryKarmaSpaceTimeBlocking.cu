@@ -29,7 +29,7 @@ using namespace std;
 #define gam 0.001f
 #define East 1.5415f
 #define DT 0.05f
-#define DX (12.0f / 32)
+#define DX (12.0f / 96)
 
 /*
 Função somente da GPU que recebe os parametros para o calculo de um stencil
@@ -47,14 +47,13 @@ __device__ void destinyTest(float *d_r,int GX, int Gx, int Gy,float val)
 {
     d_r[Gx + ((Gy) * (GX))] = val;
 }
-__device__ void _2Dstencil_(float *d_e, float *d_r, float *d_v, float *c_coeff, int X, int k, int x, int y, int GX, int Gx, int Gy)
+__device__ void _2Dstencil_(float *d_e, float *d_r, float *d_v, int X, int x, int y, int GX, int Gx, int Gy)
 {
-    int h_e_i;
-    int h_r_i = x + (y * (X));
-    h_e_i = h_r_i;
-    float temp = d_e[h_r_i];
-
+    int h_e_i = x + (y * (X));
+    float temp = d_e[h_e_i];
     float rv = d_v[h_e_i];
+
+
     float Rn = (1.0f / (1.0f - expf(-Re))) - rv;
     float p = (temp > En) * 1.0f;
     float dv = (Rn * p - (1.0f - p) * rv) / tauN;
@@ -72,40 +71,19 @@ __device__ void _2Dstencil_(float *d_e, float *d_r, float *d_v, float *c_coeff, 
    
     temp = (temp + (du * DT) + (lap * DT * gam / (DX * DX)));
 
-    //testes para saber se o problema estava na visualização pois o opencv foi configurado pra aceitar valores entre 0.0f e 1.0f
-    //if(temp >= 0.0f && temp =< 1.0f)
-    h_r_i = Gx + ((Gy) * (GX));
-    d_r[h_r_i] = temp;//d_v[h_e_i];// d_e[h_e_i]+1;// = temp;
-    //else
-    //   d_r[h_r_i] = 1.0f;
+
     d_v[h_e_i] = rv + dv * DT;
+    //d_v[h_e_i] = rv+rv;
+    h_e_i = Gx + ((Gy) * (GX));
+    d_r[h_e_i] = temp;//d_v[h_e_i];// d_e[h_e_i]+1;// = temp;
+   // d_r[h_e_i] = rv;
+    
 
-    //*** código utilizado apenas na versão com stencil simples usado anteriormente
-    //temp *= c_coeff[0];
-    // for(int lk =1;lk<(k/2)+1;lk++)
-    // {
-    //     h_e_i = (x+lk) + ( (y) * (X) );
-    //     temp += d_e[h_e_i]*c_coeff[lk];
-
-    //     h_e_i = (x-lk) + ( (y) * (X) );
-    //     temp += d_e[h_e_i]*c_coeff[lk];
-
-    //     h_e_i = (x) + ( (y+lk) * (X) );
-    //     temp += d_e[h_e_i]*c_coeff[lk];
-
-    //     h_e_i = (x) + ( (y-lk) * (X) );
-    //     temp += d_e[h_e_i]*c_coeff[lk];
-    // }
-    //  h_r_i = Gx + ( (Gy) * (GX) );
-    // if(temp < 1.0f)
-    //     d_r[h_r_i] = temp;
-    // else
-    //     d_r[h_r_i] = 1.0f;
 }
 /*
 função chamada pelo host que controla as cópias e a ordem do calculo dos stencils bem como a carga para cada thread
 */
-__global__ void _2Dstencil_global(float *d_e, float *d_r, float *d_v, float *c_coeff, int X, int Y, int k, int times)
+__global__ void _2Dstencil_global(float *d_e, float *d_r, float *d_v, int X, int Y, int k, int times)
 {
 
     int x, y; //,h_e_i,h_r_i,Xs,Ys,Dx,Dy;
@@ -158,7 +136,7 @@ __global__ void _2Dstencil_global(float *d_e, float *d_r, float *d_v, float *c_c
         {
             //int globalIdx = (stride % tDx) + tk2 + Dx*(int(stride / Dx)) + tk2;
             //destinyTest(shared, Dx, (stride % tDx) + tk2, int(stride / Dx) + tk2,t+1);
-            _2Dstencil_(shared, sharedRes, sharedV, c_coeff, Dx, k, (stride % tDx) + tk2, (int(stride / Dx)) + tk2, Dx, (stride % tDx) + tk2, (int(stride / Dx)) + tk2);
+            _2Dstencil_(shared, sharedRes, sharedV, Dx, (stride % tDx) + tk2, (int(stride / Dx)) + tk2, Dx, (stride % tDx) + tk2, (int(stride / Dx)) + tk2);
         }
         __syncthreads();
         for (int stride = blockThreadIndex; stride < sharedTam; stride += (blockDim.x * blockDim.y))
@@ -170,7 +148,7 @@ __global__ void _2Dstencil_global(float *d_e, float *d_r, float *d_v, float *c_c
     /*
     Envia pra ser calculado todos os elementos do ultimo instante de tempo
    */
-    //_2Dstencil_(shared, d_r, sharedV, c_coeff, Dx, k, threadIdx.x + k2, threadIdx.y + k2, X, x, y);
+    _2Dstencil_(shared, d_r, sharedV, Dx, threadIdx.x + k2, threadIdx.y + k2, X, x, y);
     
     //  for(int stride=blockThreadIndex;stride<sharedTam;stride+=(blockDim.x*blockDim.y))
     // {
@@ -180,15 +158,21 @@ __global__ void _2Dstencil_global(float *d_e, float *d_r, float *d_v, float *c_c
     //  }
     
     //destinyTest(d_r,X, x, y,1.0f);
+    // __syncthreads();
+    // for (int stride = blockThreadIndex; stride < sharedTam; stride += (blockDim.x * blockDim.y))
+    // {
+    //      int globalIdxX = (blockIdx.x * blockDim.x) - k2 + stride % Dx;
+    //      int globalIdxY = ((blockIdx.y * blockDim.y) - k2 + int(stride / Dx));
+    //      int globalIdx = globalIdxX + (globalIdxX==-1) - (globalIdxX==X)      +      (globalIdxY + (globalIdxY==-1) - (globalIdxY==Y)) * X;
+    //      if(blockIdx.x == 1 && blockIdx.y == 1)
+    //         d_r[globalIdx] = shared[stride];
+    // }
     __syncthreads();
-    for (int stride = blockThreadIndex; stride < sharedTam; stride += (blockDim.x * blockDim.y))
-    {
-         int globalIdxX = (blockIdx.x * blockDim.x) - k2 + stride % Dx;
-         int globalIdxY = ((blockIdx.y * blockDim.y) - k2 + int(stride / Dx));
-         int globalIdx = globalIdxX + (globalIdxX==-1) - (globalIdxX==X)      +      (globalIdxY + (globalIdxY==-1) - (globalIdxY==Y)) * X;
-         if(blockIdx.x == 1 && blockIdx.y == 1)
-            d_r[globalIdx] = shared[stride];
-    }
+    
+         int stride = ((x%(Dx-k))+k2) + ((y/(Dx-k))+k2)*Dx;
+         int globalIdx = x + y * X;
+         d_v[globalIdx] = sharedV[stride];
+    
    
 }
 
@@ -245,7 +229,7 @@ int main(int argc, char *argv[])
     dim3 block_dim(BX, BY, 1);
     dim3 grid_dim(GX, GY, 1);
     //sharedSize = ((block_dim.x+k)*(block_dim.y+k))*sizeof(int);
-    sharedSize = ((block_dim.x + (k * times)) * (block_dim.y + (k * times))) * sizeof(float) * 3;
+    sharedSize = ((block_dim.x + (k * 1)) * (block_dim.y + (k * 1))) * sizeof(float) * 3;
     //sharedTam = ((block_dim.x+(k*2))*(block_dim.y+(k*2)));
     size = X * Y * sizeof(float);
     tam = X * Y;
@@ -313,7 +297,14 @@ int main(int argc, char *argv[])
     /*
     Executa o kernel
     */
-    _2Dstencil_global<<<grid_dim, block_dim, sharedSize>>>(d_e, d_r, d_v, d_c_coeff, X, Y, k, times);
+    for(int i=0; i<times; i ++)
+    {
+        _2Dstencil_global<<<grid_dim, block_dim, sharedSize>>>(d_e, d_r, d_v, X, Y, k, 1);
+        float * temp = d_e;
+        d_e = d_r;
+        d_r = temp;
+    }
+    
 
     /*
     Identifica possíveis erros
@@ -344,7 +335,7 @@ int main(int argc, char *argv[])
     /*
     Copia o resultado de volta para o CPU
     */
-    cudaMemcpy(h_r, d_r, size, cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_r, d_e, size, cudaMemcpyDeviceToHost);
     /*
     Copia o resultado para a imagem de visualização
     A estrutura de 

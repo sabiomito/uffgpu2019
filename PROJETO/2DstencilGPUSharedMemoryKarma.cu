@@ -108,20 +108,24 @@ __global__ void timeStep( const float *voltIN, float *v, float *voltOUT )
 int main( int argc, char *argv[] )
 {
     int nsteps = 3; //8000;
-    if ( argc > 1 ) 
+    // if ( argc > 1 ) 
+    // {
+    //     char *p;
+    //     long conv = strtol(argv[1], &p, 10);
+    //     //
+    //     // Check for errors: e.g., the string does not represent an integer
+    //     // or the integer is larger than int
+    //     if (*p != '\0' || conv > INT_MAX) 
+    //     {
+    //         printf("Error with argument 1!");
+    //         return 3;
+    //     }
+    //     else
+    //     nsteps = int(conv/DT);
+    // }
+    if (argc > 1)
     {
-        char *p;
-        long conv = strtol(argv[1], &p, 10);
-        //
-        // Check for errors: e.g., the string does not represent an integer
-        // or the integer is larger than int
-        if (*p != '\0' || conv > INT_MAX) 
-        {
-            printf("Error with argument 1!");
-            return 3;
-        }
-        else
-        nsteps = int(conv/DT);
+        nsteps = atoi(argv[1]);
     }
     //
     cudaEvent_t dstart,dstop;
@@ -229,9 +233,9 @@ int main( int argc, char *argv[] )
     printf("GPU elapsed time: %f s (%f milliseconds)\n", (elapsed/1000.0), elapsed);
 
     if ( (i%2) == 0 )
-    HANDLE_ERROR( cudaMemcpy( hvolt, dvoltB, MODELSIZE2D*sizeof(float), cudaMemcpyDeviceToHost ) );
-    else
     HANDLE_ERROR( cudaMemcpy( hvolt, dvoltA, MODELSIZE2D*sizeof(float), cudaMemcpyDeviceToHost ) );
+    else
+    HANDLE_ERROR( cudaMemcpy( hvolt, dvoltB, MODELSIZE2D*sizeof(float), cudaMemcpyDeviceToHost ) );
 
 
     arq = fopen("resultado.txt", "wt");
