@@ -43,15 +43,18 @@ x -y - posição do centro do stencil na estrutura de entrada
 GX - Dimensão horizontal da estrutura do dado de saída
 Gx - Gy posição do centro do stencil na estrutura de saida
 */
-
-__device__ void _2Dstencil_(float *d_e, float *d_r, float *d_v,int vIdx, float *c_coeff, int X, int Y, int k, int x, int y, int GX, int Gx, int Gy)
+__device__ void destinyTest(float *d_r,int GX, int Gx, int Gy,float val)
+{
+    d_r[Gx + ((Gy) * (GX))] = val;
+}
+__device__ void _2Dstencil_(float *d_e, float *d_r, float *d_v, float *c_coeff, int X, int Y, int k, int x, int y, int GX, int Gx, int Gy)
 {
     int h_e_i;
     int h_r_i = x + (y * (X));
     h_e_i = h_r_i;
     float temp = d_e[h_r_i];
 
-    float rv = d_v[vIdx];
+    float rv = d_v[h_e_i];
     float Rn = (1.0f / (1.0f - expf(-Re))) - rv;
     float p = (temp > En) * 1.0f;
     float dv = (Rn * p - (1.0f - p) * rv) / tauN;
@@ -72,10 +75,10 @@ __device__ void _2Dstencil_(float *d_e, float *d_r, float *d_v,int vIdx, float *
     //testes para saber se o problema estava na visualização pois o opencv foi configurado pra aceitar valores entre 0.0f e 1.0f
     //if(temp >= 0.0f && temp =< 1.0f)
     h_r_i = Gx + ((Gy) * (GX));
-    d_r[h_r_i] = d_v[h_e_i];// d_e[h_e_i]+1;// = temp;
+    d_r[h_r_i] = temp;//d_v[h_e_i];// d_e[h_e_i]+1;// = temp;
     //else
     //   d_r[h_r_i] = 1.0f;
-    //d_v[vIdx] = rv + dv * DT;
+    d_v[h_e_i] = rv + dv * DT;
 
     //*** código utilizado apenas na versão com stencil simples usado anteriormente
     //temp *= c_coeff[0];
@@ -118,6 +121,7 @@ __global__ void _2Dstencil_global(float *d_e, float *d_r, float *d_v, float *c_c
     int Dy = blockDim.y + (k * times);
     int sharedTam = Dx * Dy;
     float *sharedRes = &shared[sharedTam];
+    float *sharedV = &sharedRes[sharedTam];
 
     /*
     Copia o Tile de memória compartilhada necessária para a configuração de tempo desejada
@@ -126,11 +130,18 @@ __global__ void _2Dstencil_global(float *d_e, float *d_r, float *d_v, float *c_c
     */
     for (int stride = blockThreadIndex; stride < sharedTam; stride += (blockDim.x * blockDim.y))
     {
-        int globalIdx = (blockIdx.x * blockDim.x) - k2 + stride % Dx + ((blockIdx.y * blockDim.y) - k2 + stride / Dx) * X;
-        if (globalIdx > 0 && (blockIdx.x * blockDim.x) - k2 + stride % Dx < X && ((blockIdx.y * blockDim.y) - k2 + stride / Dx) < Y)
-            shared[stride] = d_e[globalIdx];
-        else
-            shared[stride] = 0.0f;
+        int globalIdx = (blockIdx.x * blockDim.x) - k2 + stride % Dx + ((blockIdx.y * blockDim.y) - k2 + int(stride / Dx)) * X;
+        if((blockIdx.x * blockDim.x) - k2 + stride % Dx >= 0 && (blockIdx.x * blockDim.x) - k2 + stride % Dx % X < X && ((blockIdx.y  * blockDim.y) - k2 + int(stride / Dx)) >= 0 && ((blockIdx.y  * blockDim.y) - k2 + int(stride / Dx)) < Y)
+                 {  
+                        shared[stride] = d_e[globalIdx];
+                        sharedV[stride] = d_v[globalIdx];
+                 }
+                 else
+                 {
+                    globalIdx = (blockIdx.x * blockDim.x) + stride % Dx + ((blockIdx.y * blockDim.y) + int(stride / Dx)) * X;
+                    shared[stride]=d_e[globalIdx];
+                 }
+            
     }
 
     __syncthreads();
@@ -150,8 +161,9 @@ __global__ void _2Dstencil_global(float *d_e, float *d_r, float *d_v, float *c_c
         int tSharedTam = tDx * tDy;
         for (int stride = blockThreadIndex; stride < tSharedTam; stride += (blockDim.x * blockDim.y))
         {
-            int globalIdx = (blockIdx.x * blockDim.x) - k2 + stride % Dx + ((blockIdx.y * blockDim.y) - k2 + stride / Dx) * X;
-            _2Dstencil_(shared, sharedRes, d_v,globalIdx, c_coeff, Dx, Dy, k, (stride % tDx) + tk2, (stride / tDx) + tk2, Dx, (stride % tDx) + tk2, (stride / tDx) + tk2);
+            //int globalIdx = (stride % tDx) + tk2 + Dx*(int(stride / Dx)) + tk2;
+            //destinyTest(shared, Dx, (stride % tDx) + tk2, int(stride / Dx) + tk2,t+1);
+            _2Dstencil_(shared, sharedRes, sharedV, c_coeff, Dx, Dy, k, (stride % tDx) + tk2, (int(stride / Dx)) + tk2, Dx, (stride % tDx) + tk2, (int(stride / Dx)) + tk2);
         }
         __syncthreads();
         for (int stride = blockThreadIndex; stride < sharedTam; stride += (blockDim.x * blockDim.y))
@@ -163,15 +175,25 @@ __global__ void _2Dstencil_global(float *d_e, float *d_r, float *d_v, float *c_c
     /*
     Envia pra ser calculado todos os elementos do ultimo instante de tempo
    */
-    _2Dstencil_(shared, d_r, d_v,((x + k2) + ((y + k2) * (X))), c_coeff, Dx, Dy, k, threadIdx.x + k2, threadIdx.y + k2, X, x, y);
-
-    // for(int stride=blockThreadIndex;stride<sharedTam;stride+=(blockDim.x*blockDim.y))
+    _2Dstencil_(shared, d_r, sharedV, c_coeff, Dx, Dy, k, threadIdx.x + k2, threadIdx.y + k2, X, x, y);
+    
+    //  for(int stride=blockThreadIndex;stride<sharedTam;stride+=(blockDim.x*blockDim.y))
     // {
-    //     int globalIdx = (blockIdx.x*blockDim.x)-k2+stride%Dx + ((blockIdx.y*blockDim.y)-k2+stride/Dx)*X;
+    //      int globalIdx = (blockIdx.x*blockDim.x)-k2+stride%Dx + ((blockIdx.y*blockDim.y)-k2+stride/Dx)*X;
     //     if(globalIdx > 0 && (blockIdx.x*blockDim.x)-k2+stride%Dx < X && ((blockIdx.y*blockDim.y)-k2+stride/Dx)<Y)
-    //     d_r[globalIdx] = sharedRes[stride];
-
+    //      d_r[globalIdx] = sharedRes[stride];
+    //  }
+    
+    //destinyTest(d_r,X, x, y,1.0f);
+    //__syncthreads();
+    // for (int stride = blockThreadIndex; stride < sharedTam; stride += (blockDim.x * blockDim.y))
+    // {
+    //     int globalIdx = (0 * blockDim.x) - k2 + stride % Dx + ((0 * blockDim.y) - k2 + int(stride / Dx)) * X;
+    //     if((0 * blockDim.x) - k2 + stride % Dx >= 0 && (0 * blockDim.x) - k2 + stride % Dx % X < X && ((0 * blockDim.y) - k2 + int(stride / Dx)) >= 0 && ((0 * blockDim.y) - k2 + int(stride / Dx)) < Y)
+    //         d_r[globalIdx] = shared[stride];
+       
     // }
+   
 }
 
 int main(int argc, char *argv[])
@@ -227,7 +249,7 @@ int main(int argc, char *argv[])
     dim3 block_dim(BX, BY, 1);
     dim3 grid_dim(GX, GY, 1);
     //sharedSize = ((block_dim.x+k)*(block_dim.y+k))*sizeof(int);
-    sharedSize = ((block_dim.x + (k * times)) * (block_dim.y + (k * times))) * sizeof(float) * 2;
+    sharedSize = ((block_dim.x + (k * times)) * (block_dim.y + (k * times))) * sizeof(float) * 3;
     //sharedTam = ((block_dim.x+(k*2))*(block_dim.y+(k*2)));
     size = X * Y * sizeof(float);
     tam = X * Y;
@@ -265,7 +287,7 @@ int main(int argc, char *argv[])
     for (int i = 0; i < X; i++)
         for (int j = 0; j < Y; j++)
         {
-            h_v[i + j * X] = i+j;
+            h_v[i + j * X] = 0.5f;
             int temp;
             fscanf(arq," %d",&temp);
             h_e[i + j * X] = temp;
