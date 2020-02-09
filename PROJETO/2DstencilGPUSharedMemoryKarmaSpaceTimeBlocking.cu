@@ -337,7 +337,7 @@ int main(int argc, char *argv[])
     /*
     Copia o resultado de volta para o CPU
     */
-    cudaMemcpy(h_r, d_v, size, cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_r, d_r, size, cudaMemcpyDeviceToHost);
     /*
     Copia o resultado para a imagem de visualização
     A estrutura de 
