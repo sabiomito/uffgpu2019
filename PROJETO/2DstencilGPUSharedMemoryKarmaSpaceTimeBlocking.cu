@@ -51,6 +51,7 @@ __device__ void _2Dstencil_(float *d_e, float *d_r, float *d_v, int X, int x, in
 {
     int h_e_i = x + (y * (X));
     float temp = d_e[h_e_i];
+    
     float rv = d_v[h_e_i];
 
 
@@ -167,11 +168,12 @@ __global__ void _2Dstencil_global(float *d_e, float *d_r, float *d_v, int X, int
     //      if(blockIdx.x == 1 && blockIdx.y == 1)
     //         d_r[globalIdx] = shared[stride];
     // }
-    __syncthreads();
+     __syncthreads();
     
-         int stride = ((x%(Dx-k))+k2) + ((y/(Dx-k))+k2)*Dx;
+          int stride = ((x%(blockDim.x))+k2) + ((y%(blockDim.y))+k2)*Dx;
          int globalIdx = x + y * X;
-         d_v[globalIdx] = sharedV[stride];
+         //if(blockIdx.x == 0 && blockIdx.y ==1)
+          d_v[globalIdx] = sharedV[stride];
     
    
 }
@@ -183,7 +185,7 @@ int main(int argc, char *argv[])
     */
     float *h_e, *h_r, *h_v;
     float *d_e, *d_r, *d_v;
-    int size,tam, sharedSize;
+    int size, sharedSize;
     int X = 32;
     int Y = 32;
     int k = 2;
@@ -232,7 +234,7 @@ int main(int argc, char *argv[])
     sharedSize = ((block_dim.x + (k * 1)) * (block_dim.y + (k * 1))) * sizeof(float) * 3;
     //sharedTam = ((block_dim.x+(k*2))*(block_dim.y+(k*2)));
     size = X * Y * sizeof(float);
-    tam = X * Y;
+    //tam = X * Y;
 
     h_e = (float *)malloc(size);
     h_r = (float *)malloc(size);
@@ -267,7 +269,7 @@ int main(int argc, char *argv[])
     for (int i = 0; i < X; i++)
         for (int j = 0; j < Y; j++)
         {
-            h_v[i + j * X] = 0.5f;
+            h_v[i + j * X] =0.5f;
             int temp;
             fscanf(arq," %d",&temp);
             h_e[i + j * X] = temp;
@@ -335,7 +337,7 @@ int main(int argc, char *argv[])
     /*
     Copia o resultado de volta para o CPU
     */
-    cudaMemcpy(h_r, d_e, size, cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_r, d_v, size, cudaMemcpyDeviceToHost);
     /*
     Copia o resultado para a imagem de visualização
     A estrutura de 
