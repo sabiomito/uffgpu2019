@@ -99,8 +99,8 @@ __global__ void _2Dstencil_global(float *d_e, float *d_r, float *d_v, int X, int
     int Dx = blockDim.x + (k * times);
     int Dy = blockDim.y + (k * times);
     int sharedTam = Dx * Dy;
-    float *sharedRes = &shared[sharedTam];
-    float *sharedV = &sharedRes[sharedTam];
+    float *sharedRes = &shared[sharedTam-1];
+    float *sharedV = &sharedRes[sharedTam-1];
 
     /*
     Copia o Tile de memória compartilhada necessária para a configuração de tempo desejada
@@ -189,7 +189,7 @@ int main(int argc, char *argv[])
     int X = 32;
     int Y = 32;
     int k = 2;
-    int times = 1;
+    int times = 1,globalTimes = 1;
     int BX = 32;
     int BY = 32;
     int GX = 1;
@@ -206,12 +206,12 @@ int main(int argc, char *argv[])
     }
     if (argc > 2)
     {
-        k = atoi(argv[2]);
+        times = atoi(argv[2]);
     }
 
     if (argc > 3)
     {
-        times = atoi(argv[3]);
+        globalTimes = atoi(argv[3]);
     }
 
     if (X > 32)
@@ -231,7 +231,7 @@ int main(int argc, char *argv[])
     dim3 block_dim(BX, BY, 1);
     dim3 grid_dim(GX, GY, 1);
     //sharedSize = ((block_dim.x+k)*(block_dim.y+k))*sizeof(int);
-    sharedSize = ((block_dim.x + (k * 1)) * (block_dim.y + (k * 1))) * sizeof(float) * 3;
+    sharedSize = ((block_dim.x + (k * times)) * (block_dim.y + (k * times))) * sizeof(float) * 3;
     //sharedTam = ((block_dim.x+(k*2))*(block_dim.y+(k*2)));
     size = X * Y * sizeof(float);
     //tam = X * Y;
@@ -299,9 +299,9 @@ int main(int argc, char *argv[])
     /*
     Executa o kernel
     */
-    for(int i=0; i<times; i ++)
+    for(int i=0; i<globalTimes/times; i ++)
     {
-        _2Dstencil_global<<<grid_dim, block_dim, sharedSize>>>(d_e, d_r, d_v, X, Y, k, 1);
+        _2Dstencil_global<<<grid_dim, block_dim, sharedSize>>>(d_e, d_r, d_v, X, Y, k, times);
         float * temp = d_e;
         d_e = d_r;
         d_r = temp;
