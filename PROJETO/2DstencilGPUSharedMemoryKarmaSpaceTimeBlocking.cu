@@ -99,8 +99,8 @@ __global__ void _2Dstencil_global(float *d_e, float *d_r, float *d_v, int X, int
     int Dx = blockDim.x + (k * times);
     int Dy = blockDim.y + (k * times);
     int sharedTam = Dx * Dy;
-    float *sharedRes = &shared[sharedTam-1];
-    float *sharedV = &sharedRes[sharedTam-1];
+    float *sharedRes = &shared[sharedTam];
+    float *sharedV = &sharedRes[sharedTam];
 
     /*
     Copia o Tile de memória compartilhada necessária para a configuração de tempo desejada
