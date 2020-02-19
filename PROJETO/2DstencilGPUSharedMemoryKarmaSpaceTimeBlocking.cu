@@ -84,20 +84,19 @@ __device__ void _2Dstencil_(float *d_e, float *d_r, float *d_v, int X, int x, in
 /*
 função chamada pelo host que controla as cópias e a ordem do calculo dos stencils bem como a carga para cada thread
 */
-__global__ void _2Dstencil_global(float *d_e, float *d_r, float *d_v, int X, int Y, int k, int times)
+__global__ void _2Dstencil_global(float *d_e, float *d_r, float *d_v, int X, int Y, int times)
 {
 
     int x, y; //,h_e_i,h_r_i,Xs,Ys,Dx,Dy;
     x = threadIdx.x + (blockIdx.x * blockDim.x);
     y = threadIdx.y + (blockIdx.y * blockDim.y);
-    int k2 = k / 2 * times;
     extern __shared__ float shared[];
 
     int blockThreadIndex = threadIdx.x + threadIdx.y * blockDim.x;
     // Xs = threadIdx.x;
     // Ys = threadIdx.y;
-    int Dx = blockDim.x + (k * times);
-    int Dy = blockDim.y + (k * times);
+    int Dx = blockDim.x + (2 * times);
+    int Dy = blockDim.y + (2 * times);
     int sharedTam = Dx * Dy;
     float *sharedRes = &shared[sharedTam];
     float *sharedV = &sharedRes[sharedTam];
@@ -109,10 +108,11 @@ __global__ void _2Dstencil_global(float *d_e, float *d_r, float *d_v, int X, int
     */
     for (int stride = blockThreadIndex; stride < sharedTam; stride += (blockDim.x * blockDim.y))
     {
-         
-         int globalIdxX = (blockIdx.x * blockDim.x) - k2 + stride % Dx;
-         int globalIdxY = ((blockIdx.y * blockDim.y) - k2 + int(stride / Dx));
-         int globalIdx = globalIdxX + (globalIdxX==-1) - (globalIdxX==X)      +      (globalIdxY + (globalIdxY==-1) - (globalIdxY==Y)) * X;
+         int sharedIdxX = stride % Dx;
+         int sharedIdxY = int(stride / Dx);
+         int globalIdxX =(blockIdx.x * blockDim.x) + sharedIdxX - times; 
+         int globalIdxY =(blockIdx.y * blockDim.y) + sharedIdxY - times;
+         int globalIdx = globalIdxX + (globalIdxX==-1) - (globalIdxX==X)  +  (globalIdxY + (globalIdxY==-1) - (globalIdxY==Y)) * X;
       
         shared[stride] = d_e[globalIdx];
         sharedV[stride] = d_v[globalIdx];
@@ -126,9 +126,9 @@ __global__ void _2Dstencil_global(float *d_e, float *d_r, float *d_v, int X, int
     for (int t = times - 1; t > 0; t--)
     {
         //_2Dstencil_(shared,sharedRes,c_coeff,Dx,Dy,k,threadIdx.x+k2,threadIdx.y+k2,Dx,threadIdx.x+k2,threadIdx.y+k2);
-        int tDx = blockDim.x + (t * k);
-        int tDy = blockDim.y + (t * k);
-        int tk2 = (times - t) * k / 2;
+        int tDx = blockDim.x + (t * 2);
+        int tDy = blockDim.y + (t * 2);
+        int tk2 = (times - t +1);
         // int tDx = blockDim.x+(1*k);
         // int tDy = blockDim.y+(1*k);
         // int tk2 = (1)*k/2;
@@ -149,7 +149,7 @@ __global__ void _2Dstencil_global(float *d_e, float *d_r, float *d_v, int X, int
     /*
     Envia pra ser calculado todos os elementos do ultimo instante de tempo
    */
-    _2Dstencil_(shared, d_r, sharedV, Dx, threadIdx.x + k2, threadIdx.y + k2, X, x, y);
+    _2Dstencil_(shared, d_r, sharedV, Dx, threadIdx.x + times, threadIdx.y + times, X, x, y);
     
     //  for(int stride=blockThreadIndex;stride<sharedTam;stride+=(blockDim.x*blockDim.y))
     // {
@@ -170,10 +170,14 @@ __global__ void _2Dstencil_global(float *d_e, float *d_r, float *d_v, int X, int
     // }
      __syncthreads();
     
-          int stride = ((x%(blockDim.x))+k2) + ((y%(blockDim.y))+k2)*Dx;
+         
+        // int sharedIdxX = (blockIdx.x * blockDim.x) + times; 
+        // int sharedIdxY = (blockIdx.y * blockDim.y) + times;
+        // int sharedIdx = sharedIdxX + sharedIdxY*Dx;
+        int sharedIdx = ((x%(blockDim.x))+times) + ((y%(blockDim.y))+times)*Dx;
          int globalIdx = x + y * X;
          //if(blockIdx.x == 0 && blockIdx.y ==1)
-          d_v[globalIdx] = sharedV[stride];
+          d_v[globalIdx] = sharedV[sharedIdx];
     
    
 }
@@ -188,13 +192,11 @@ int main(int argc, char *argv[])
     int size, sharedSize;
     int X = 32;
     int Y = 32;
-    int k = 2;
     int times = 1,globalTimes = 1;
     int BX = 32;
     int BY = 32;
     int GX = 1;
     int GY = 1;
-    float *c_coeff, *d_c_coeff;
 
     /*
     Obtenção dos parâmetros de entrada
@@ -231,7 +233,7 @@ int main(int argc, char *argv[])
     dim3 block_dim(BX, BY, 1);
     dim3 grid_dim(GX, GY, 1);
     //sharedSize = ((block_dim.x+k)*(block_dim.y+k))*sizeof(int);
-    sharedSize = ((block_dim.x + (k * times)) * (block_dim.y + (k * times))) * sizeof(float) * 3;
+    sharedSize = ((block_dim.x + (2 * times)) * (block_dim.y + (2 * times))) * sizeof(float) * 3;
     //sharedTam = ((block_dim.x+(k*2))*(block_dim.y+(k*2)));
     size = X * Y * sizeof(float);
     //tam = X * Y;
@@ -239,25 +241,9 @@ int main(int argc, char *argv[])
     h_e = (float *)malloc(size);
     h_r = (float *)malloc(size);
     h_v = (float *)malloc(size);
-    c_coeff = (float *)malloc((k / 2 + 1) * sizeof(float));
     cudaMalloc(&d_e, size);
     cudaMalloc(&d_r, size);
     cudaMalloc(&d_v, size);
-    cudaMalloc(&d_c_coeff, (k / 2 + 1) * sizeof(float));
-
-    printf("\n coefs \n");
-    for (int i = 0; i < (k / 2 + 1); i++)
-    {
-        c_coeff[i] = (float)((k / 2 + 1) - i) / (float)(k / 2 + 1);
-    }
-    //c_coeff[0] = 0.0;
-    for (int i = 0; i < (k / 2 + 1); i++)
-    {
-        printf(" %f", c_coeff[i]);
-    }
-    printf("\n coefs \n");
-    cudaMemcpy(d_c_coeff, c_coeff, (k / 2 + 1) * sizeof(float), cudaMemcpyHostToDevice);
-
 
 //Copia os dados do campo e envia para a GPU e inicializa o dominio de entrada
 
@@ -301,7 +287,7 @@ int main(int argc, char *argv[])
     */
     for(int i=0; i<globalTimes/times; i ++)
     {
-        _2Dstencil_global<<<grid_dim, block_dim, sharedSize>>>(d_e, d_r, d_v, X, Y, k, times);
+        _2Dstencil_global<<<grid_dim, block_dim, sharedSize>>>(d_e, d_r, d_v, X, Y, times);
         float * temp = d_e;
         d_e = d_r;
         d_r = temp;
@@ -337,7 +323,7 @@ int main(int argc, char *argv[])
     /*
     Copia o resultado de volta para o CPU
     */
-    cudaMemcpy(h_r, d_r, size, cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_r, d_e, size, cudaMemcpyDeviceToHost);
     /*
     Copia o resultado para a imagem de visualização
     A estrutura de 
@@ -356,10 +342,8 @@ int main(int argc, char *argv[])
 
     cudaFree(d_e);
     cudaFree(d_r);
-    cudaFree(d_c_coeff);
     std::free(h_e);
     std::free(h_r);
-    std::free(c_coeff);
 
     return 0;
 } /* main */
