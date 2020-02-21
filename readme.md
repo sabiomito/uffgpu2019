@@ -3,10 +3,11 @@
 
 [Link para o notebook do colab](readmeContent/colabNotebook.ipynb)
 
-## [20/02] ~ [20:00] -- [22:16]
+## [20/02] ~ [20:00] -- [23:26]
 - Conferência da logica desde o inicicio do programa levando em consideração que os erros podem estar no local onde achamos que mais temos certeza que esta certo
 - Depois de alguns testes percebi que o erro só poderia estar no envio dos indices para o calculo do stencil
 - constatei um erro, uma confusão entre a variável do tamanho do tile do tempo atual e do tamanho inicial do tile está assim agora, mudou um pouco mas ainda tem alguma coisa estranha.
+- Atualização das imagens
 ![](readmeContent/blocking_96x96_12000steps_2times-20-02.gif)
 
 ## [19/02] ~ [24:00] -- [25:00]
