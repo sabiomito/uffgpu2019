@@ -90,7 +90,7 @@ __global__ void _2Dstencil_global(float *d_e, float *d_r, float *d_v, int X, int
     int x, y; //,h_e_i,h_r_i,Xs,Ys,Dx,Dy;
     x = threadIdx.x + (blockIdx.x * blockDim.x);
     y = threadIdx.y + (blockIdx.y * blockDim.y);
-    extern __shared__ float shared[];
+    extern __shared__ float sharedOrig[];
 
     int blockThreadIndex = threadIdx.x + threadIdx.y * blockDim.x;
     // Xs = threadIdx.x;
@@ -98,8 +98,13 @@ __global__ void _2Dstencil_global(float *d_e, float *d_r, float *d_v, int X, int
     int Dx = blockDim.x + (2 * times);
     int Dy = blockDim.y + (2 * times);
     int sharedTam = Dx * Dy;
-    float *sharedRes = &shared[sharedTam];
-    float *sharedV = &sharedRes[sharedTam];
+
+    float * shared = sharedOrig;
+    float * sharedRes = shared + sharedTam;
+    float * sharedV = sharedRes + sharedTam; 
+
+    //float * sharedRes = &shared[sharedTam];
+    //float *sharedV = &sharedRes[sharedTam];
 
     /*
     Copia o Tile de memória compartilhada necessária para a configuração de tempo desejada
@@ -110,9 +115,9 @@ __global__ void _2Dstencil_global(float *d_e, float *d_r, float *d_v, int X, int
     {
          int sharedIdxX = stride % Dx;
          int sharedIdxY = int(stride / Dx);
-         int globalIdxX =(blockIdx.x * blockDim.x) + sharedIdxX - times; 
+         int globalIdxX =(blockIdx.x * blockDim.x) + sharedIdxX - times;
          int globalIdxY =(blockIdx.y * blockDim.y) + sharedIdxY - times;
-         int globalIdx = globalIdxX + (globalIdxX==-1) - (globalIdxX==X)  +  (globalIdxY + (globalIdxY==-1) - (globalIdxY==Y)) * X;
+         int globalIdx = globalIdxX + (globalIdxX < 0) - (globalIdxX >= X)  +  (globalIdxY + (globalIdxY < 0) - (globalIdxY >= Y)) * X;
       
         shared[stride] = d_e[globalIdx];
         sharedV[stride] = d_v[globalIdx];
@@ -137,19 +142,24 @@ __global__ void _2Dstencil_global(float *d_e, float *d_r, float *d_v, int X, int
         {
             //int globalIdx = (stride % tDx) + tk2 + Dx*(int(stride / Dx)) + tk2;
             //destinyTest(shared, Dx, (stride % tDx) + tk2, int(stride / Dx) + tk2,t+1);
-            _2Dstencil_(shared, sharedRes, sharedV, Dx, (stride % tDx) + tk2, (int(stride / Dx)) + tk2, Dx, (stride % tDx) + tk2, (int(stride / Dx)) + tk2);
+            _2Dstencil_(shared, sharedRes, sharedV, tDx, (stride % tDx) + tk2, (int(stride / tDx)) + tk2, tDx, (stride % tDx) + tk2, (int(stride / tDx)) + tk2);
         }
-        __syncthreads();
-        for (int stride = blockThreadIndex; stride < sharedTam; stride += (blockDim.x * blockDim.y))
-        {
-            shared[stride] = sharedRes[stride];
-        }
+
+        // __syncthreads();
+        // for (int stride = blockThreadIndex; stride < sharedTam; stride += (blockDim.x * blockDim.y))
+        // {
+        //     shared[stride] = sharedRes[stride];
+        // }
+        float * temp = shared;
+        shared = sharedRes;
+        sharedRes = temp;
         __syncthreads();
     }
     /*
     Envia pra ser calculado todos os elementos do ultimo instante de tempo
    */
-    _2Dstencil_(shared, d_r, sharedV, Dx, threadIdx.x + times, threadIdx.y + times, X, x, y);
+   
+    _2Dstencil_(shared, d_r, sharedV, Dx, ((x%(blockDim.x))+times), ((y%(blockDim.y))+times), X, x, y);
     
     //  for(int stride=blockThreadIndex;stride<sharedTam;stride+=(blockDim.x*blockDim.y))
     // {
@@ -170,11 +180,11 @@ __global__ void _2Dstencil_global(float *d_e, float *d_r, float *d_v, int X, int
     // }
      __syncthreads();
     
-         
+         int sharedIdx = ((x%(blockDim.x))+times) + ((y%(blockDim.y))+times)*Dx;
         // int sharedIdxX = (blockIdx.x * blockDim.x) + times; 
         // int sharedIdxY = (blockIdx.y * blockDim.y) + times;
         // int sharedIdx = sharedIdxX + sharedIdxY*Dx;
-        int sharedIdx = ((x%(blockDim.x))+times) + ((y%(blockDim.y))+times)*Dx;
+        //int sharedIdx = ((x%(blockDim.x))+times) + ((y%(blockDim.y))+times)*Dx;
          int globalIdx = x + y * X;
          //if(blockIdx.x == 0 && blockIdx.y ==1)
           d_v[globalIdx] = sharedV[sharedIdx];
