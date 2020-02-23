@@ -3,13 +3,14 @@
 
 [Link para o notebook do colab](readmeContent/colabNotebook.ipynb)
 
-## [23/02] ~ [12:00] -- [19:17]
+## [23/02] ~ [12:00] -- [20:50]
 - Terminei os preparativos para fazer os testes de tempo
 - Organizei o notebook e os códigos para rodar em diferentes tamanhos de domínio
-- Realizei um teste travando o tamanho em 96x96 e variando a quantidade de instantes de tempo por chamada de kernel e plotei o resultado no grafico:
+- Realizei um teste travando o tamanho em 96x96 e a quantidade de instantes de tempo em 12000 e variando a quantidade de instantes de tempo por chamada de kernel e plotei o resultado no grafico:
 
 ![](readmeContent/desempenho96x96_12000steps_timesVar.PNG)
 
+- Para conferir os resultados gerei os gifs para varios tamanhos diferentes de domínio com  quantidade de instantes de tempo por chamada de kernel igual a 15 e  quantidade de instantes de tempo igual 19000 e atualizei as vizualizações com elas, até este commit as vizualizações eram por  quantidade de instantes de tempo por chamada de kernel.
 
 ## [22/02] ~ [22:15] -- [24:30]
 - Atualização das vizualizações
@@ -51,67 +52,76 @@
 
 
 
-## Vizualização da propagação
+## Vizualização da propagação variando o tamanho do domínio
 
-### global_96x96_12000steps
-![](readmeContent/global_96x96_12000steps.gif)
+### blocking_352x352_19000steps_15times
+![](readmeContent/blocking_32x32_19000steps_15times.gif)
 
-### blocking_96x96_12000steps_1times
-![](readmeContent/blocking_96x96_12000steps_1times.gif)
+### blocking_64x64_19000steps_15times
+![](readmeContent/blocking_64x64_19000steps_15times.gif)
 
-### blocking_96x96_12000steps_2times
-![](readmeContent/blocking_96x96_12000steps_2times.gif)
+### blocking_96x96_19000steps_15times
+![](readmeContent/blocking_96x96_19000steps_15times.gif)
 
-### blocking_96x96_12000steps_3times
-![](readmeContent/blocking_96x96_12000steps_3times.gif)
+### blocking_128x128_19000steps_15times
+![](readmeContent/blocking_128x128_19000steps_15times.gif)
 
-### blocking_96x96_12000steps_4times
-![](readmeContent/blocking_96x96_12000steps_4times.gif)
+### blocking_160x160_19000steps_15times
+![](readmeContent/blocking_160x160_19000steps_15times.gif)
 
-### blocking_96x96_12000steps_5times
-![](readmeContent/blocking_96x96_12000steps_5times.gif)
+### blocking_192x192_19000steps_15times
+![](readmeContent/blocking_192x192_19000steps_15times.gif)
 
-### blocking_96x96_12000steps_6times
-![](readmeContent/blocking_96x96_12000steps_6times.gif)
+### blocking_224x224_19000steps_15times
+![](readmeContent/blocking_224x224_19000steps_15times.gif)
 
-### blocking_96x96_12000steps_7times
-![](readmeContent/blocking_96x96_12000steps_7times.gif)
+### blocking_256x256_19000steps_15times
+![](readmeContent/blocking_256x256_19000steps_15times.gif)
 
-### blocking_96x96_12000steps_8times
-![](readmeContent/blocking_96x96_12000steps_8times.gif)
+### blocking_288x288_19000steps_15times
+![](readmeContent/blocking_288x288_19000steps_15times.gif)
 
-### blocking_96x96_12000steps_9times
-![](readmeContent/blocking_96x96_12000steps_9times.gif)
+### blocking_320x320_19000steps_15times
+![](readmeContent/blocking_320x320_19000steps_15times.gif)
 
-### blocking_96x96_12000steps_10times
-![](readmeContent/blocking_96x96_12000steps_10times.gif)
+### blocking_352x352_19000steps_15times
+![](readmeContent/blocking_352x352_19000steps_15times.gif)
 
-### blocking_96x96_12000steps_11times
-![](readmeContent/blocking_96x96_12000steps_11times.gif)
+### blocking_384x384_19000steps_15times
+![](readmeContent/blocking_384x384_19000steps_15times.gif)
 
-### blocking_96x96_12000steps_12times
-![](readmeContent/blocking_96x96_12000steps_12times.gif)
+### blocking_416x416_19000steps_15times
+![](readmeContent/blocking_416x416_19000steps_15times.gif)
 
-### blocking_96x96_12000steps_13times
-![](readmeContent/blocking_96x96_12000steps_13times.gif)
+### blocking_448x448_19000steps_15times
+![](readmeContent/blocking_448x448_19000steps_15times.gif)
 
-### blocking_96x96_12000steps_14times
-![](readmeContent/blocking_96x96_12000steps_14times.gif)
+### blocking_480x480_19000steps_15times
+![](readmeContent/blocking_480x480_19000steps_15times.gif)
 
-### blocking_96x96_12000steps_15times
-![](readmeContent/blocking_96x96_12000steps_15imes.gif)
+### blocking_512x512_19000steps_15times
+![](readmeContent/blocking_512x512_19000steps_15times.gif)
 
-### blocking_96x96_12000steps_16times
-![](readmeContent/blocking_96x96_12000steps_16times.gif)
+### blocking_544x544_19000steps_15times
+![](readmeContent/blocking_544x544_19000steps_15times.gif)
 
-### blocking_96x96_12000steps_17times
-![](readmeContent/blocking_96x96_12000steps_17times.gif)
+### blocking_576x576_19000steps_15times
+![](readmeContent/blocking_576x576_19000steps_15times.gif)
 
-### blocking_96x96_12000steps_18times
-![](readmeContent/blocking_96x96_12000steps_18times.gif)
+### blocking_608x608_19000steps_15times
+![](readmeContent/blocking_608x608_19000steps_15times.gif)
 
-### blocking_96x96_12000steps_19times
-![](readmeContent/blocking_96x96_12000steps_19times.gif)
+### blocking_640x640_19000steps_15times
+![](readmeContent/blocking_640x640_19000steps_15times.gif)
 
-### blocking_96x96_12000steps_20times
-![](readmeContent/blocking_96x96_12000steps_20times.gif)
+### blocking_672x672_19000steps_15times
+![](readmeContent/blocking_672x672_19000steps_15times.gif)
+
+### blocking_704x704_19000steps_15times
+![](readmeContent/blocking_704x704_19000steps_15times.gif)
+
+### blocking_736x736_19000steps_15times
+![](readmeContent/blocking_736x736_19000steps_15times.gif)
+
+### blocking_768x768_19000steps_15times
+![](readmeContent/blocking_768x768_19000steps_15times.gif)
