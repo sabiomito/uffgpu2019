@@ -3,6 +3,15 @@
 
 [Link para o notebook do colab](readmeContent/colabNotebook.ipynb)
 
+## [22/02] ~ [20:00] -- [22:00]
+- Tentei simplificar uma parte do código onde acreditava ser o problema e fiz desenhos para visualizar melhor, como resultado dessa abordagem consegui que o algoritmo funcionasse utilizando 2 instantes de tempo, como a universidade não permite o acesso após 22hrs, ao chegar em casa fou atualizar o restante dos instantes de tempo e constatar se está funcionando corretamente.
+- O segundo instante de tempo se encontra assim:
+![](readmeContent/blocking_96x96_12000steps_2times-22-02.gif)
+
+## [21/02] ~ [6:30] -- [12:00]
+- Fui até o rio de janeiro para comprar dois monitores para minha sala, através da olx, configurei um dos computadores que ganhei do LMDC (uns velhos que seriam descartados) e organizei tudo em minha sala, na parte da tarde trabalhei com will no projeto do bikenit e a noite ja estava bastante cansado para trabalhar nesse projeto.
+
+
 ## [20/02] ~ [20:00] -- [23:26]
 - Conferência da logica desde o inicicio do programa levando em consideração que os erros podem estar no local onde achamos que mais temos certeza que esta certo
 - Depois de alguns testes percebi que o erro só poderia estar no envio dos indices para o calculo do stencil

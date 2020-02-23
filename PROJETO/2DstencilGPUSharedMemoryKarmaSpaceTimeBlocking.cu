@@ -128,12 +128,13 @@ __global__ void _2Dstencil_global(float *d_e, float *d_r, float *d_v, int X, int
     /*
     Envia pra ser calculado todos os elementos além do ultimo instante de tempo
     */
-    for (int t = times - 1; t > 0; t--)
+    for (int t = 1; t < times; t++)
     {
         //_2Dstencil_(shared,sharedRes,c_coeff,Dx,Dy,k,threadIdx.x+k2,threadIdx.y+k2,Dx,threadIdx.x+k2,threadIdx.y+k2);
-        int tDx = blockDim.x + (t * 2);
-        int tDy = blockDim.y + (t * 2);
-        int tk2 = (times - t +1);
+        int tDx = blockDim.x + ((times - t) * 2);
+        int tDy = blockDim.y + ((times - t) * 2);
+        int tk2 = (t);
+        
         // int tDx = blockDim.x+(1*k);
         // int tDy = blockDim.y+(1*k);
         // int tk2 = (1)*k/2;
@@ -142,7 +143,7 @@ __global__ void _2Dstencil_global(float *d_e, float *d_r, float *d_v, int X, int
         {
             //int globalIdx = (stride % tDx) + tk2 + Dx*(int(stride / Dx)) + tk2;
             //destinyTest(shared, Dx, (stride % tDx) + tk2, int(stride / Dx) + tk2,t+1);
-            _2Dstencil_(shared, sharedRes, sharedV, tDx, (stride % tDx) + tk2, (int(stride / tDx)) + tk2, tDx, (stride % tDx) + tk2, (int(stride / tDx)) + tk2);
+            _2Dstencil_(shared, sharedRes, sharedV, Dx, (stride % tDx) + tk2, (int(stride / tDx)) + tk2, Dx, (stride % tDx) + tk2, (int(stride / tDx)) + tk2);
         }
 
         // __syncthreads();
