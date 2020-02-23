@@ -3,8 +3,13 @@
 
 [Link para o notebook do colab](readmeContent/colabNotebook.ipynb)
 
+## [22/02] ~ [22:15] -- [24:30]
+- Atualização das vizualizações
+- Configuração para os testes de desempenho
+
 ## [22/02] ~ [20:00] -- [22:00]
-- Tentei simplificar uma parte do código onde acreditava ser o problema e fiz desenhos para visualizar melhor, como resultado dessa abordagem consegui que o algoritmo funcionasse utilizando 2 instantes de tempo, como a universidade não permite o acesso após 22hrs, ao chegar em casa fou atualizar o restante dos instantes de tempo e constatar se está funcionando corretamente.
+- Tentei simplificar uma parte do código onde acreditava ser o problema e fiz desenhos para visualizar melhor, como resultado dessa abordagem consegui que o algoritmo funcionasse utilizando 2 instantes de tempo, como a universidade não permite o acesso após 22hrs, ao chegar em casa vou atualizar o restante dos instantes de tempo e constatar se está funcionando corretamente.
+
 - O segundo instante de tempo se encontra assim:
 ![](readmeContent/blocking_96x96_12000steps_2times-22-02.gif)
 
@@ -16,7 +21,8 @@
 - Conferência da logica desde o inicicio do programa levando em consideração que os erros podem estar no local onde achamos que mais temos certeza que esta certo
 - Depois de alguns testes percebi que o erro só poderia estar no envio dos indices para o calculo do stencil
 - constatei um erro, uma confusão entre a variável do tamanho do tile do tempo atual e do tamanho inicial do tile está assim agora, mudou um pouco mas ainda tem alguma coisa estranha.
-- Atualização das imagens
+- Atualização das imagens.
+
 ![](readmeContent/blocking_96x96_12000steps_2times-20-02.gif)
 
 ## [19/02] ~ [24:00] -- [25:00]
@@ -63,3 +69,36 @@ Alguns erros estão ocorrendo nas copias entre os blocos, estou tentando resolve
 
 ### blocking_96x96_12000steps_9times
 ![](readmeContent/blocking_96x96_12000steps_9times.gif)
+
+### blocking_96x96_12000steps_10times
+![](readmeContent/blocking_96x96_12000steps_10times.gif)
+
+### blocking_96x96_12000steps_11times
+![](readmeContent/blocking_96x96_12000steps_11times.gif)
+
+### blocking_96x96_12000steps_12times
+![](readmeContent/blocking_96x96_12000steps_12times.gif)
+
+### blocking_96x96_12000steps_13times
+![](readmeContent/blocking_96x96_12000steps_13times.gif)
+
+### blocking_96x96_12000steps_14times
+![](readmeContent/blocking_96x96_12000steps_14times.gif)
+
+### blocking_96x96_12000steps_15times
+![](readmeContent/blocking_96x96_12000steps_15imes.gif)
+
+### blocking_96x96_12000steps_16times
+![](readmeContent/blocking_96x96_12000steps_16times.gif)
+
+### blocking_96x96_12000steps_17times
+![](readmeContent/blocking_96x96_12000steps_17times.gif)
+
+### blocking_96x96_12000steps_18times
+![](readmeContent/blocking_96x96_12000steps_18times.gif)
+
+### blocking_96x96_12000steps_19times
+![](readmeContent/blocking_96x96_12000steps_19times.gif)
+
+### blocking_96x96_12000steps_20times
+![](readmeContent/blocking_96x96_12000steps_20times.gif)
