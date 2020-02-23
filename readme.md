@@ -33,10 +33,15 @@
 - Retirada de um parâmetro que não esta mais sendo utilizado pelo motivo que não é necessário variar a ordem do stencil até porque a nova logica não perimite isso sendo a ordem sempre 2, mesma coisa com os coeficientes.
 - Alguns comentarios adicionados.
 - Descobri um valor errado no calculo do tamanho da borda na hora de enviar o indice para a função do calculo do stencil testei apenas com 2 instantes de tempo por vez está assim agora.
+
 ![](readmeContent/blocking_96x96_12000steps_2times-18-02.gif)
 
 ## [17/02] ~ [19:30] -- [22:00]
-Alguns erros estão ocorrendo nas copias entre os blocos, estou tentando resolver esse problema, quando percebi que não estava tendo muitas ideias pra tentar resolver o problema, me voltei a corrigir os erros na escrita do artigo.
+- Alguns erros estão ocorrendo nas copias entre os blocos, estou tentando resolver esse problema, quando percebi que não estava tendo muitas ideias pra tentar resolver o problema, me voltei a corrigir os erros na escrita do artigo. Com dois instantes de tempo o resultado se encontra assim:
+
+![](readmeContent/blocking_96x96_12000steps_2times-17-02.gif)
+
+
 
 ## Vizualização da propagação
 
