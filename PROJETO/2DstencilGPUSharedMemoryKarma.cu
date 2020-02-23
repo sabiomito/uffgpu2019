@@ -1,6 +1,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/time.h>
+#include <iostream>
+#include <string>
+
+
 
 //===> FINITE DIFFERENCES PARAMETERS <===//
 #define DT 0.05f                   //->Time in milliseconds
@@ -21,7 +25,9 @@
 #define VOLT0 3.0f
 
 //==> DISCRETE DOMAIN <==//
-#define MODEL_WIDTH 96
+#ifndef MODEL_WIDTH
+#define MODEL_WIDTH 0
+#endif
 #define MODELSIZE_X (MODEL_WIDTH)
 #define MODELSIZE_Y (MODEL_WIDTH)
 #define MODELSIZE_Z 1
@@ -226,11 +232,19 @@ int main( int argc, char *argv[] )
         fprintf(prof,"%d,%6.4f,%6.4f\n", (i+1), ((i+1)*DT), hvolt[pointIdx]);
         }*/
     }
+    cudaDeviceSynchronize();
     cudaEventRecord( dstop, 0 );
     cudaEventSynchronize ( dstop );
     float elapsed;
     cudaEventElapsedTime( &elapsed, dstart, dstop );
     printf("GPU elapsed time: %f s (%f milliseconds)\n", (elapsed/1000.0), elapsed);
+
+    arq = fopen("TempoExecucaoOrig12000.txt", "a");
+    //printf("X %d || Y %d \nBX %d || BY %d \n",X,Y,BX,BY);
+        fprintf (arq,"[%.5f],\n",elapsed);
+    fclose(arq);
+
+
 
     if ( (i%2) == 0 )
     HANDLE_ERROR( cudaMemcpy( hvolt, dvoltA, MODELSIZE2D*sizeof(float), cudaMemcpyDeviceToHost ) );

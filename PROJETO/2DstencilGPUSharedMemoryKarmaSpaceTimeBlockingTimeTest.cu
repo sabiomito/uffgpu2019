@@ -16,6 +16,9 @@ EXECUTAR --> ./go DOMAIN_DIMS STENCIL_ORDER SPACE_TIME_BLOCK_TIMES BLOCK_DIM_X B
 using namespace std;
 
 //===> CONSTANTES karma model <===//
+#ifndef MODEL_WIDTH
+#define MODEL_WIDTH 0
+#endif
 #define Eh 3.0f
 #define En 1.0f
 #define Re 0.6f
@@ -24,7 +27,7 @@ using namespace std;
 #define gam 0.001f
 #define East 1.5415f
 #define DT 0.05f
-#define DX (12.0f / 96)
+#define DX (12.0f / MODEL_WIDTH)
 
 /*
 Função somente da GPU que recebe os parametros para o calculo de um stencil
@@ -238,6 +241,7 @@ int main(int argc, char *argv[])
     /*
     Começa o Timer
     */
+    cudaDeviceSynchronize();
     cudaEvent_t start, stop;
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
@@ -283,14 +287,14 @@ int main(int argc, char *argv[])
     cudaEventDestroy(start);
     cudaEventDestroy(stop);
 
-    arq = fopen("TempoExecucaoBlockingVariandoTimes.txt", "a");
+    arq = fopen("TempoExecucaoBlocking12000VariandoTimes.txt", "a");
     //printf("X %d || Y %d \nBX %d || BY %d \n",X,Y,BX,BY);
-    fprintf ("[%d,%.5f],\n",times,elapsedTime);
+        fprintf (arq,"[%d,%.5f],\n",times,elapsedTime);
     fclose(arq);
     /*
     Copia o resultado para a imagem de visualização
     */
-    
+    cudaMemcpy(h_r, d_e, size, cudaMemcpyDeviceToHost);
     arq = fopen("resultado.txt", "wt");
     for (int i = 0; i < X; i++)
     {

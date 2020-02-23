@@ -3,6 +3,14 @@
 
 [Link para o notebook do colab](readmeContent/colabNotebook.ipynb)
 
+## [23/02] ~ [12:00] -- [19:17]
+- Terminei os preparativos para fazer os testes de tempo
+- Organizei o notebook e os códigos para rodar em diferentes tamanhos de domínio
+- Realizei um teste travando o tamanho em 96x96 e variando a quantidade de instantes de tempo por chamada de kernel e plotei o resultado no grafico:
+
+![](readmeContent/desempenho96x96_12000steps_timesVar.PNG)
+
+
 ## [22/02] ~ [22:15] -- [24:30]
 - Atualização das vizualizações
 - Configuração para os testes de desempenho
