@@ -337,7 +337,7 @@ int main(int argc, char *argv[])
         if(MODEL_WIDTH == 768)
             sharedTime = 1576.36401;
 
-    fprintf (arq,"[%d,%.5f,%.5f],\n",MODEL_WIDTH,elapsedTime,sharedTime);
+    fprintf (arq,"[%d,%.5f,%.5f],\n",times,elapsedTime,sharedTime);
     fclose(arq);
     /*
     Copia o resultado para a imagem de visualização

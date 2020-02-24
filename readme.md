@@ -3,6 +3,15 @@
 
 [Link para o notebook do colab](readmeContent/colabNotebook.ipynb)
 
+## [24/02] ~ [13:30] -- [20:28]
+- Ao chegar na minha sala, o computador estava inesperadamente ligado mas não respondia, constatei que o problema estava na memória RAM, e uma limpeza com uma borracha resolveu o problema.
+- Adicionei um teste de 768x768 19000 instantes variando o blockingTimeSteps
+
+![](readmeContent/desempenho768x768_19000steps_timesVar.PNG)
+
+- Plotar os gráficos utilizando o tikz
+- Sinto que hoje o trabalho não rendeu muito, teve um movimento maior na minha sala e acho que tirou um pouco minha atenção.
+
 ## [23/02] ~ [12:00] -- [22:00]
 - Terminei os preparativos para fazer os testes de tempo
 - Organizei o notebook e os códigos para rodar em diferentes tamanhos de domínio
