@@ -241,7 +241,7 @@ int main( int argc, char *argv[] )
 
     arq = fopen("TempoExecucaoOrig12000.txt", "a");
     //printf("X %d || Y %d \nBX %d || BY %d \n",X,Y,BX,BY);
-        fprintf (arq,"[%.5f],\n",elapsed);
+        fprintf (arq,"[%d,%.5f],\n",MODEL_WIDTH,elapsed);
     fclose(arq);
 
 

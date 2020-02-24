@@ -289,7 +289,55 @@ int main(int argc, char *argv[])
 
     arq = fopen("TempoExecucaoBlocking12000VariandoTimes.txt", "a");
     //printf("X %d || Y %d \nBX %d || BY %d \n",X,Y,BX,BY);
-        fprintf (arq,"[%d,%.5f],\n",times,elapsedTime);
+    float sharedTime = 0.0;
+        if(MODEL_WIDTH == 64)
+            sharedTime = 108.41396;
+        if(MODEL_WIDTH == 96)
+            sharedTime = 89.01120;
+        if(MODEL_WIDTH == 128)
+            sharedTime = 95.11117;
+        if(MODEL_WIDTH == 160)
+            sharedTime = 113.37702;
+        if(MODEL_WIDTH == 192)
+            sharedTime = 101.13689;
+        if(MODEL_WIDTH == 224)
+            sharedTime = 154.31091;
+        if(MODEL_WIDTH == 256)
+            sharedTime = 186.73097;
+        if(MODEL_WIDTH == 288)
+            sharedTime = 218.92052;
+        if(MODEL_WIDTH == 320)
+            sharedTime = 232.28406;
+        if(MODEL_WIDTH == 352)
+            sharedTime = 295.31876;
+        if(MODEL_WIDTH == 384)
+            sharedTime = 304.94522;
+        if(MODEL_WIDTH == 416)
+            sharedTime = 385.76855;
+        if(MODEL_WIDTH == 448)
+            sharedTime = 570.88287;
+        if(MODEL_WIDTH == 480)
+            sharedTime = 701.02271;
+        if(MODEL_WIDTH == 512)
+            sharedTime = 768.65991;
+        if(MODEL_WIDTH == 544)
+            sharedTime = 881.91882;
+        if(MODEL_WIDTH == 576)
+            sharedTime = 979.11212;
+        if(MODEL_WIDTH == 608)
+            sharedTime = 1082.10193;
+        if(MODEL_WIDTH == 640)
+            sharedTime = 1188.77576;
+        if(MODEL_WIDTH == 672)
+            sharedTime = 1316.50024;
+        if(MODEL_WIDTH == 704)
+            sharedTime = 1436.11035;
+        if(MODEL_WIDTH == 736)
+            sharedTime = 1532.38489;
+        if(MODEL_WIDTH == 768)
+            sharedTime = 1576.36401;
+
+    fprintf (arq,"[%d,%.5f,%.5f],\n",MODEL_WIDTH,elapsedTime,sharedTime);
     fclose(arq);
     /*
     Copia o resultado para a imagem de visualização

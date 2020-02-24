@@ -3,7 +3,7 @@
 
 [Link para o notebook do colab](readmeContent/colabNotebook.ipynb)
 
-## [23/02] ~ [12:00] -- [20:50]
+## [23/02] ~ [12:00] -- [22:00]
 - Terminei os preparativos para fazer os testes de tempo
 - Organizei o notebook e os códigos para rodar em diferentes tamanhos de domínio
 - Realizei um teste travando o tamanho em 96x96 e a quantidade de instantes de tempo em 12000 e variando a quantidade de instantes de tempo por chamada de kernel e plotei o resultado no grafico:
@@ -11,6 +11,10 @@
 ![](readmeContent/desempenho96x96_12000steps_timesVar.PNG)
 
 - Para conferir os resultados gerei os gifs para varios tamanhos diferentes de domínio com  quantidade de instantes de tempo por chamada de kernel igual a 15 e  quantidade de instantes de tempo igual 19000 e atualizei as vizualizações com elas, até este commit as vizualizações eram por  quantidade de instantes de tempo por chamada de kernel.
+- Atualização nos códigos para plotar o tempo em função do tamanhos para varios timeStepSize diferentes com quantidade de instantes de tempo total em 19000
+
+desempenhoShared&Blocking_3timeStep_19000steps_modelSizeVar
+![](readmeContent/desempenhoShared&Blocking_3timeStep_19000steps_modelSizeVar.PNG)
 
 ## [22/02] ~ [22:15] -- [24:30]
 - Atualização das vizualizações
