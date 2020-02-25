@@ -3,6 +3,11 @@
 
 [Link para o notebook do colab](readmeContent/colabNotebook.ipynb)
 
+## [25/02] ~ [17:23] -- [20:28]
+- Adicionei os dois gráficos no paper usando o tikz
+- Releitura do artigo
+- Escrevi algumas linhas e tentei corrigir alguns detalhes 
+
 ## [24/02] ~ [13:30] -- [20:28]
 - Ao chegar na minha sala, o computador estava inesperadamente ligado mas não respondia, constatei que o problema estava na memória RAM, e uma limpeza com uma borracha resolveu o problema.
 - Adicionei um teste de 768x768 19000 instantes variando o blockingTimeSteps
