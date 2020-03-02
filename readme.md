@@ -3,6 +3,13 @@
 
 [Link para o notebook do colab](readmeContent/colabNotebook.ipynb)
 
+## Tarefas:
+- Fazer simulação de espiral
+- Rodar testes e gravar o desempenho de varias combinações de tamanho de bloco 8x8 16x16 32x32 8x16 4x4 4x8 4x16 16x64 8x128
+- Plotar gráfico da memória para várias combinações de tamanho de bloco
+- Implementar versão Karma em CPU(openMP)
+
+
 ## [25/02] ~ [17:23] -- [20:28]
 - Adicionei os dois gráficos no paper usando o tikz
 - Releitura do artigo
