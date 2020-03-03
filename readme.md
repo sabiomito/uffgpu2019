@@ -4,11 +4,19 @@
 [Link para o notebook do colab](readmeContent/colabNotebook.ipynb)
 
 ## Tarefas:
-- Fazer simulação de espiral
-- Rodar testes e gravar o desempenho de varias combinações de tamanho de bloco 8x8 16x16 32x32 8x16 4x4 4x8 4x16 16x64 8x128
-- Plotar gráfico da memória para várias combinações de tamanho de bloco
-- Implementar versão Karma em CPU(openMP)
 
+- Implementar versão Karma em CPU(openMP)
+- Descobrir o motivo de não conseguir mais do que 1024x1024 modelSize
+
+## [25/02] ~ [18:30] -- [22:00]
+- Adicionado simulação de espiral:
+
+![](readmeContent/animatedSpiral.gif)
+
+- Ao rodar testes e gravar o desempenho de varias combinações de tamanho de bloco 8x8 16x16 32x32 8x16 4x4 4x8 4x16 16x64 8x128, gera resultados diferentes e não consegui descobrir ainda o motivo. 
+- Plotar gráfico da memória para várias combinações de tamanho de bloco:
+
+![](readmeContent/graficoSharedTam.PNG)
 
 ## [25/02] ~ [17:23] -- [20:28]
 - Adicionei os dois gráficos no paper usando o tikz
