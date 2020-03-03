@@ -8,7 +8,7 @@
 - Implementar versão Karma em CPU(openMP)
 - Descobrir o motivo de não conseguir mais do que 1024x1024 modelSize
 
-## [25/02] ~ [18:30] -- [22:00]
+## [26/02] ~ [18:30] -- [22:00]
 - Adicionado simulação de espiral:
 
 ![](readmeContent/animatedSpiral.gif)
