@@ -164,9 +164,16 @@ __global__ void _2Dstencil_global(float *d_e, float *d_r, float *d_v, int X, int
    */
    
     _2Dstencil_(shared, d_r, sharedV, Dx, ((x%(blockDim.x))+times), ((y%(blockDim.y))+times), X, x, y);
+    __syncthreads();
     int globalIdx = x + y * X;
+    int sharedIdx = ((x%(blockDim.x))+times) + ((y%(blockDim.y))+times)*Dx;
+    d_v[globalIdx] = sharedV[sharedIdx];
     if(eraseMiddle && x > X/2)
+    {
         d_r[globalIdx] = 0.0f;
+        //d_v[globalIdx] = 0.5f;
+    }
+        
 
     //  for(int stride=blockThreadIndex;stride<sharedTam;stride+=(blockDim.x*blockDim.y))
     // {
@@ -185,16 +192,16 @@ __global__ void _2Dstencil_global(float *d_e, float *d_r, float *d_v, int X, int
     //      if(blockIdx.x == 1 && blockIdx.y == 1)
     //         d_r[globalIdx] = shared[stride];
     // }
-     __syncthreads();
+    // __syncthreads();
     
-         int sharedIdx = ((x%(blockDim.x))+times) + ((y%(blockDim.y))+times)*Dx;
+         //int sharedIdx = ((x%(blockDim.x))+times) + ((y%(blockDim.y))+times)*Dx;
         // int sharedIdxX = (blockIdx.x * blockDim.x) + times; 
         // int sharedIdxY = (blockIdx.y * blockDim.y) + times;
         // int sharedIdx = sharedIdxX + sharedIdxY*Dx;
         //int sharedIdx = ((x%(blockDim.x))+times) + ((y%(blockDim.y))+times)*Dx;
         // int globalIdx = x + y * X;
          //if(blockIdx.x == 0 && blockIdx.y ==1)
-          d_v[globalIdx] = sharedV[sharedIdx];
+          //d_v[globalIdx] = sharedV[sharedIdx];
     
    
 }
@@ -302,12 +309,19 @@ int main(int argc, char *argv[])
     /*
     Executa o kernel
     */
+    bool reseted = false;
     for(int i=0; i<globalTimes/times; i ++)
     {
-        if(i == 533)
+        if(i*times > 8000 && !reseted)
+        {
             _2Dstencil_global<<<grid_dim, block_dim, sharedSize>>>(d_e, d_r, d_v, X, Y, times,true);
-        else
+            reseted = true;
+        }else
+        {
             _2Dstencil_global<<<grid_dim, block_dim, sharedSize>>>(d_e, d_r, d_v, X, Y, times,false);
+        }
+            
+            
         float * temp = d_e;
         d_e = d_r;
         d_r = temp;
