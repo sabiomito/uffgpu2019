@@ -8,19 +8,24 @@
 - Implementar versão Karma em CPU(openMP)
 - Descobrir o motivo de não conseguir mais do que 1024x1024 modelSize
 
-## [05/03] ~ [19:00] -- [21:22]
+## [05/03] ~ [19:00] -- [21:30]
 
 - Simulação spiral de 1 times adicionada para tentar identificar um erro do modelo de propagação
 ![](readmeContent/animatedSpiral1times.gif)
 
 - O Certo é não voltar o campo para 0.5 volts
+
 Resetando
-![](readmeContent/spiral1timesNoDvReset12000steps.PNG)
+
+![](readmeContent/spiral1timesNoDvReset12000steps.png)
+
 Não resetando
-![](readmeContent/spiral1timesDvReset12000steps.PNG)
+
+![](readmeContent/spiral1timesDvReset12000steps.png)
 
 - Para varios quatidades de instantes de tempo diferentes constatei que o erro acontece acima de 10 por chamada de kernel, e aumenta gradativamente.
-![](readmeContent/spiralDvReset12000stepsVariosTimesComparison.PNG)
+
+![](readmeContent/spiralDvReset12000stepsVariosTimesComparison.png)
 
 ## [26/02] ~ [18:30] -- [22:00]
 - Adicionado simulação de espiral:
