@@ -8,7 +8,7 @@
 - Implementar versão Karma em CPU(openMP)
 - Descobrir o motivo de não conseguir mais do que 1024x1024 modelSize
 
-## [05/03] ~ [19:00] -- [--]
+## [05/03] ~ [19:00] -- [21:22]
 
 - Simulação spiral de 1 times adicionada para tentar identificar um erro do modelo de propagação
 ![](readmeContent/animatedSpiral1times.gif)
