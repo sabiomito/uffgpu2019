@@ -231,6 +231,12 @@ int main( int argc, char *argv[] )
         //
         fprintf(prof,"%d,%6.4f,%6.4f\n", (i+1), ((i+1)*DT), hvolt[pointIdx]);
         }*/
+        cudaError_t err = cudaSuccess;
+        err = cudaGetLastError();
+        if (err != cudaSuccess)
+        {
+            fprintf(stderr, "Failed to launch _3Dstencil_global kernel (error code %s)!\n", cudaGetErrorString(err));
+        }
     }
     cudaDeviceSynchronize();
     cudaEventRecord( dstop, 0 );

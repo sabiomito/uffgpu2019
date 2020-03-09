@@ -10,6 +10,19 @@ COMPILAR -->  nvcc 2DstencilGPUSharedMemoryBlankBorderTimeSpaceSharingOpencvKarm
 EXECUTAR --> ./go DOMAIN_DIMS STENCIL_ORDER SPACE_TIME_BLOCK_TIMES BLOCK_DIM_X BLOCK_DIM_Y
 */
 
+//////////////////////////////////////////////////////////////////////////
+static void HandleError( cudaError_t err,
+    const char *file,
+    int line ) {
+if (err != cudaSuccess) {
+printf( "%s in %s at line %d\n", cudaGetErrorString( err ),
+file, line );
+exit( EXIT_FAILURE );
+}
+}
+#define HANDLE_ERROR( err ) (HandleError( err, __FILE__, __LINE__ ))
+//////////////////////////////////////////////////////////////////////////
+
 #include <iostream>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -265,9 +278,9 @@ int main(int argc, char *argv[])
     h_e = (float *)malloc(size);
     h_r = (float *)malloc(size);
     h_v = (float *)malloc(size);
-    cudaMalloc(&d_e, size);
-    cudaMalloc(&d_r, size);
-    cudaMalloc(&d_v, size);
+    HANDLE_ERROR( cudaMalloc(&d_e, size) );
+    HANDLE_ERROR( cudaMalloc(&d_r, size) );
+    HANDLE_ERROR( cudaMalloc(&d_v, size) );
 
 //Copia os dados do campo e envia para a GPU e inicializa o dominio de entrada
 
@@ -286,13 +299,13 @@ int main(int argc, char *argv[])
         }
 
     fclose(arq);
-    cudaMemcpy(d_v, h_v, size, cudaMemcpyHostToDevice);
+    HANDLE_ERROR( cudaMemcpy(d_v, h_v, size, cudaMemcpyHostToDevice) );
    
     /* 
     Copy vectors from host memory to device memory
     Copia os dados da entrada de volta a GPU
         */
-    cudaMemcpy(d_e, h_e, size, cudaMemcpyHostToDevice);
+        HANDLE_ERROR( cudaMemcpy(d_e, h_e, size, cudaMemcpyHostToDevice) );
     
     /*
     Começa o Timer
@@ -320,7 +333,13 @@ int main(int argc, char *argv[])
         {
             _2Dstencil_global<<<grid_dim, block_dim, sharedSize>>>(d_e, d_r, d_v, X, Y, times,false);
         }
-            
+
+        cudaError_t err = cudaSuccess;
+        err = cudaGetLastError();
+        if (err != cudaSuccess)
+        {
+            fprintf(stderr, "Failed to launch _3Dstencil_global kernel (error code %s)!\n", cudaGetErrorString(err));
+        }   
             
         float * temp = d_e;
         d_e = d_r;
@@ -357,7 +376,7 @@ int main(int argc, char *argv[])
     /*
     Copia o resultado de volta para o CPU
     */
-    cudaMemcpy(h_r, d_e, size, cudaMemcpyDeviceToHost);
+    HANDLE_ERROR( cudaMemcpy(h_r, d_e, size, cudaMemcpyDeviceToHost) );
     /*
     Copia o resultado para a imagem de visualização
     A estrutura de 

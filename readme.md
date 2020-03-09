@@ -8,6 +8,10 @@
 - Implementar versão Karma em CPU(openMP)
 - Descobrir o motivo de não conseguir mais do que 1024x1024 modelSize
 
+## [09/03] ~ [22:40] -- [26:00]
+- Adicionado callbacks de erro para tentar descobrir o motivo de ao rodar tamanhos maiores
+- Alguns testes realizados e descobri que para alguns tamanho o erro de aparecer em cima acontece pra outras quantidades de timesteps
+
 ## [05/03] ~ [19:00] -- [21:30]
 
 - Simulação spiral de 1 times adicionada para tentar identificar um erro do modelo de propagação
