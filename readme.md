@@ -12,7 +12,7 @@
 - Melhorar as duas figuras represetando a memória seguindo o padrão do paper
 - Funçao para criar os blocos na figura
 
-![](readmeContent/exfig01.png)
+![](readmeContent/exfig01.PNG)
 
 ## [09/03] ~ [19:00] -- [23:55]
 - Geração de uma figura com as etapas do espiral para o paper
