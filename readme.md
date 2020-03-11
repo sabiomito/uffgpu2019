@@ -8,6 +8,13 @@
 - Implementar versão Karma em CPU(openMP)
 - Descobrir o motivo de não conseguir mais do que 1024x1024 modelSize
 
+## [11/03] ~ [7:20] -- [13:00]
+- Melhorar as duas figuras represetando a memória seguindo o padrão do paper(continuação)
+- Revisar algumas partes da escrita (Resumo e implementação)
+
+<img src="https://github.com/sabiomito/uffgpu2019/blob/master/readmeContent/spaceTimeBlockingFig.PNG" height="200">
+
+
 ## [10/03] ~ [19:20] -- [23:00]
 - Fazer o resumo
 - Melhorar as duas figuras represetando a memória seguindo o padrão do paper(continuação)
