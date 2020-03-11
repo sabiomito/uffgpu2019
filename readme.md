@@ -8,7 +8,8 @@
 - Implementar versão Karma em CPU(openMP)
 - Descobrir o motivo de não conseguir mais do que 1024x1024 modelSize
 
-## [08/03] ~ [24:55] -- [27:30]
+## [10/03] ~ [19:20] -- [23:00]
+- Fazer o resumo
 - Melhorar as duas figuras represetando a memória seguindo o padrão do paper(continuação)
 
 
