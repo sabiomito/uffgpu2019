@@ -7,6 +7,15 @@
 
 - Implementar versão Karma em CPU(openMP)
 - Descobrir o motivo de não conseguir mais do que 1024x1024 modelSize
+- Dar uma breve pesquisada em mais papers
+- Fazer os trabalhos relacionados
+- Reescrever implementação em português e testar essa abordagem (continuação)
+
+## [11/03] ~ [18:30] -- [22:20]
+- Gerar possibilidade de 8x8, 16x6 e 32x32 para as figuras
+- Revisão da escrita na implementação
+- Reescrever implementação em português e testar essa abordagem
+
 
 ## [11/03] ~ [7:20] -- [13:00]
 - Melhorar as duas figuras represetando a memória seguindo o padrão do paper(continuação)
