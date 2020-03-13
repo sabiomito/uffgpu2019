@@ -13,7 +13,7 @@
 - Fazer os trabalhos relacionados
 
 
-## [12/03] ~ [24:00] -- [22:00]
+## [12/03] ~ [24:00] -- [27:00]
 - realizar os testes usando 
 dominios
 256x256
