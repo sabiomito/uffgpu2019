@@ -187,13 +187,13 @@ int main( int argc, char *argv[] )
             
     fclose(arq);
 
-    FILE *prof;
-    char fpname[100];
-    sprintf(fpname, "./profiles_%d_k2D_shared.csv",MODELSIZE_X);
-    prof = fopen(fpname,"w");
-    fprintf(prof,"index,timestep,P\n");
-    fprintf(prof,"0,%6.4f",0.0);
-
+    // FILE *prof;
+    // char fpname[100];
+    // sprintf(fpname, "./profiles_%d_k2D_shared.csv",MODELSIZE_X);
+    // prof = fopen(fpname,"w");
+    // fprintf(prof,"index,timestep,P\n");
+    // fprintf(prof,"0,%6.4f",0.0);
+    // fclose(prof);
 
 
     dim3 point;
@@ -259,26 +259,26 @@ int main( int argc, char *argv[] )
     //printf("X %d || Y %d \nBX %d || BY %d \n",X,Y,BX,BY);
         //fprintf (arq,"[%d,%.5f],\n",MODEL_WIDTH,elapsed);
         printf ("[%d,%.5f]",0,elapsed);
-    fclose(arq);
+    //fclose(arq);
 
 
 
-    if ( (i%2) == 0 )
-    HANDLE_ERROR( cudaMemcpy( hvolt, dvoltA, MODELSIZE2D*sizeof(float), cudaMemcpyDeviceToHost ) );
-    else
-    HANDLE_ERROR( cudaMemcpy( hvolt, dvoltB, MODELSIZE2D*sizeof(float), cudaMemcpyDeviceToHost ) );
+    // if ( (i%2) == 0 )
+    // HANDLE_ERROR( cudaMemcpy( hvolt, dvoltA, MODELSIZE2D*sizeof(float), cudaMemcpyDeviceToHost ) );
+    // else
+    // HANDLE_ERROR( cudaMemcpy( hvolt, dvoltB, MODELSIZE2D*sizeof(float), cudaMemcpyDeviceToHost ) );
 
 
-    arq = fopen("resultado.txt", "wt");
-    for(int i=0;i<MODELSIZE_X;i++)
-    {
-        for(int j=0;j<MODELSIZE_Y;j++)
-        {
-            fprintf(arq," %6.4f",hvolt[i+j*MODELSIZE_X]);
-        }
-        fprintf(arq,"\n");
-    }
-    fclose(arq);
+    // arq = fopen("resultado.txt", "wt");
+    // for(int i=0;i<MODELSIZE_X;i++)
+    // {
+    //     for(int j=0;j<MODELSIZE_Y;j++)
+    //     {
+    //         fprintf(arq," %6.4f",hvolt[i+j*MODELSIZE_X]);
+    //     }
+    //     fprintf(arq,"\n");
+    // }
+    // fclose(arq);
 
 
     //fclose( prof );
@@ -287,9 +287,9 @@ int main( int argc, char *argv[] )
     cudaFree( dvoltB );
     cudaFree( dv );
     //
-    cudaDeviceSynchronize();
-    gettimeofday(&timecheck, NULL);
-    end = (long)timecheck.tv_sec * 1000 + (long)timecheck.tv_usec / 1000;
+    // cudaDeviceSynchronize();
+    // gettimeofday(&timecheck, NULL);
+    // end = (long)timecheck.tv_sec * 1000 + (long)timecheck.tv_usec / 1000;
     //printf("CPU elapsed time: %f s (%ld milliseconds)\n", ((end - start)/1000.0), (end - start));
     //
     cudaEventDestroy( dstart );

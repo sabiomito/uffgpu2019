@@ -123,8 +123,8 @@ __global__ void _2Dstencil_global(float *d_e, float *d_r, float *d_v, int X, int
         int sharedIdxY = int(stride / Dx);
         int globalIdxX = (blockIdx.x * blockDim.x) + sharedIdxX - times;
         int globalIdxY = (blockIdx.y * blockDim.y) + sharedIdxY - times;
-        int globalIdx = globalIdxX + (globalIdxX < 0) - (globalIdxX >= X)  +  (globalIdxY + (globalIdxY < 0) - (globalIdxY >= Y)) * X;
-        //int globalIdx = globalIdxX*(!(globalIdxX < 0 || globalIdxX >= X)) + (globalIdxX + (globalIdxX < 0) - (globalIdxX >= X))*((globalIdxX < 0 || globalIdxX >= X))  +   (globalIdxY*(!(globalIdxY < 0 || globalIdxY >= Y)) + (globalIdxY + (globalIdxY < 0) - (globalIdxY >= Y))*((globalIdxY < 0 || globalIdxY >= Y))) * X;
+        //int globalIdx = globalIdxX + (globalIdxX < 0) - (globalIdxX >= X)  +  (globalIdxY + (globalIdxY < 0) - (globalIdxY >= Y)) * X;
+        int globalIdx = globalIdxX*(!(globalIdxX < 0 || globalIdxX >= X)) + (globalIdxX + (globalIdxX < 0) - (globalIdxX >= X))*((globalIdxX < 0 || globalIdxX >= X))  +   (globalIdxY*(!(globalIdxY < 0 || globalIdxY >= Y)) + (globalIdxY + (globalIdxY < 0) - (globalIdxY >= Y))*((globalIdxY < 0 || globalIdxY >= Y))) * X;
       
         shared[stride] = d_e[globalIdx];
         sharedV[stride] = d_v[globalIdx];
@@ -354,21 +354,21 @@ int main(int argc, char *argv[])
     /*
     Copia o resultado de volta para o CPU
     */
-    cudaMemcpy(h_e, d_e, size, cudaMemcpyDeviceToHost);
+    //cudaMemcpy(h_e, d_e, size, cudaMemcpyDeviceToHost);
     /*
     Copia o resultado para a imagem de visualização
     A estrutura de 
     */
-    arq = fopen("resultado.txt", "wt");
-    for (int i = 0; i < X; i++)
-    {
-        for (int j = 0; j < Y; j++)
-        {
-            fprintf(arq," %6.4f \n",h_e[i+j*X]);
-        }
-        //fprintf(arq,"\n");
-    }
-    fclose(arq);
+    // arq = fopen("resultado.txt", "wt");
+    // for (int i = 0; i < X; i++)
+    // {
+    //     for (int j = 0; j < Y; j++)
+    //     {
+    //         fprintf(arq," %6.4f \n",h_e[i+j*X]);
+    //     }
+    //     //fprintf(arq,"\n");
+    // }
+    // fclose(arq);
         
 
     cudaFree(d_e);

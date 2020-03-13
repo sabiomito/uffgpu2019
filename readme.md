@@ -13,6 +13,41 @@
 - Fazer os trabalhos relacionados
 
 
+## [12/03] ~ [24:00] -- [22:00]
+- realizar os testes usando 
+dominios
+256x256
+512x512
+1024x1024
+2048x2048
+4096x4096
+8192x8192
+
+timeSteps por kernel [0 - 15]
+
+blockSizes
+(4 , 4)
+(4, 8)
+(4, 16)
+(4, 32)
+(4, 128)
+(4, 256)
+(8, 8)
+(8, 16)
+(8, 64)
+(8, 128)
+(8, 256)
+(16, 32)
+(16, 64)
+(32, 32)
+
+- tabela de alternativas
+graficos separados por dominio
+eixo Y |  eixo X    | curvas
+tempo  |  timeSteps | blockSizes
+
+
+
 
 ## [12/03] ~ [15:00] -- [22:00]
 - Fazer a descrição da figura de varios instantes de tempo por chamada de kernel
