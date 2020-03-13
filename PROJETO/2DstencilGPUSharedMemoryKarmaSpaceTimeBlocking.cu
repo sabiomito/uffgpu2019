@@ -124,8 +124,9 @@ __global__ void _2Dstencil_global(float *d_e, float *d_r, float *d_v, int X, int
         int globalIdxX = (blockIdx.x * blockDim.x) + sharedIdxX - times;
         int globalIdxY = (blockIdx.y * blockDim.y) + sharedIdxY - times;
         //int globalIdx = globalIdxX + (globalIdxX < 0) - (globalIdxX >= X)  +  (globalIdxY + (globalIdxY < 0) - (globalIdxY >= Y)) * X;
-        int globalIdx = globalIdxX*(!(globalIdxX < 0 || globalIdxX >= X)) + (globalIdxX + (globalIdxX < 0) - (globalIdxX >= X))*((globalIdxX < 0 || globalIdxX >= X))  +   (globalIdxY*(!(globalIdxY < 0 || globalIdxY >= Y)) + (globalIdxY + (globalIdxY < 0) - (globalIdxY >= Y))*((globalIdxY < 0 || globalIdxY >= Y))) * X;
-      
+        //int globalIdx = globalIdxX*(!(globalIdxX < 0 || globalIdxX >= X)) + (globalIdxX + (globalIdxX < 0) - (globalIdxX >= X))*((globalIdxX < 0 || globalIdxX >= X))  +   (globalIdxY*(!(globalIdxY < 0 || globalIdxY >= Y)) + (globalIdxY + (globalIdxY < 0) - (globalIdxY >= Y))*((globalIdxY < 0 || globalIdxY >= Y))) * X;
+        int globalIdx = globalIdxX + (-1*globalIdxX)*(globalIdxX < 0) - (globalIdxX-X+1)*(globalIdxX >= X)  +  (globalIdxY + (-1*globalIdxY)*(globalIdxY < 0) - (globalIdxY-Y+1)*(globalIdxY >= Y)) * X;
+       
         shared[stride] = d_e[globalIdx];
         sharedV[stride] = d_v[globalIdx];
     }
@@ -186,7 +187,7 @@ __global__ void _2Dstencil_global(float *d_e, float *d_r, float *d_v, int X, int
     //      if(blockIdx.x == 1 && blockIdx.y == 1)
     //         d_r[globalIdx] = shared[stride];
     // }
-     __syncthreads();
+    //  __syncthreads();
      int globalIdx = x + y * X;
      int sharedIdx = ((x%(blockDim.x))+times) + ((y%(blockDim.y))+times)*Dx;
      d_v[globalIdx] = sharedV[sharedIdx];
@@ -364,9 +365,9 @@ int main(int argc, char *argv[])
     // {
     //     for (int j = 0; j < Y; j++)
     //     {
-    //         fprintf(arq," %6.4f \n",h_e[i+j*X]);
+    //         fprintf(arq," %6.4f",h_e[i+j*X]);
     //     }
-    //     //fprintf(arq,"\n");
+    //     fprintf(arq,"\n");
     // }
     // fclose(arq);
         
