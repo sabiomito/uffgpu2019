@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <math.h>
 
+
 /*
 Instruções
 COMPILAR -->  nvcc 2DstencilGPUSharedMemoryBlankBorderTimeSpaceSharingOpencvKarma.cu -o go `pkg-config --cflags --libs opencv` -w
@@ -11,6 +12,7 @@ EXECUTAR --> ./go DOMAIN_DIMS STENCIL_ORDER SPACE_TIME_BLOCK_TIMES BLOCK_DIM_X B
 */
 
 #include <iostream>
+#include <fstream>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <stdio.h>
@@ -21,6 +23,10 @@ EXECUTAR --> ./go DOMAIN_DIMS STENCIL_ORDER SPACE_TIME_BLOCK_TIMES BLOCK_DIM_X B
 using namespace std;
 
 //===> CONSTANTES karma model <===//
+#ifndef MODEL_WIDTH
+#define MODEL_WIDTH 96
+#endif
+
 #define Eh 3.0f
 #define En 1.0f
 #define Re 0.6f
@@ -29,7 +35,7 @@ using namespace std;
 #define gam 0.001f
 #define East 1.5415f
 #define DT 0.05f
-#define DX (12.0f / 96)
+#define DX (12.0f / MODEL_WIDTH)
 
 /*
 Função somente da GPU que recebe os parametros para o calculo de um stencil
@@ -113,11 +119,12 @@ __global__ void _2Dstencil_global(float *d_e, float *d_r, float *d_v, int X, int
     */
     for (int stride = blockThreadIndex; stride < sharedTam; stride += (blockDim.x * blockDim.y))
     {
-         int sharedIdxX = stride % Dx;
-         int sharedIdxY = int(stride / Dx);
-         int globalIdxX =(blockIdx.x * blockDim.x) + sharedIdxX - times;
-         int globalIdxY =(blockIdx.y * blockDim.y) + sharedIdxY - times;
-         int globalIdx = globalIdxX + (globalIdxX < 0) - (globalIdxX >= X)  +  (globalIdxY + (globalIdxY < 0) - (globalIdxY >= Y)) * X;
+        int sharedIdxX = stride % Dx;
+        int sharedIdxY = int(stride / Dx);
+        int globalIdxX = (blockIdx.x * blockDim.x) + sharedIdxX - times;
+        int globalIdxY = (blockIdx.y * blockDim.y) + sharedIdxY - times;
+        int globalIdx = globalIdxX + (globalIdxX < 0) - (globalIdxX >= X)  +  (globalIdxY + (globalIdxY < 0) - (globalIdxY >= Y)) * X;
+        //int globalIdx = globalIdxX*(!(globalIdxX < 0 || globalIdxX >= X)) + (globalIdxX + (globalIdxX < 0) - (globalIdxX >= X))*((globalIdxX < 0 || globalIdxX >= X))  +   (globalIdxY*(!(globalIdxY < 0 || globalIdxY >= Y)) + (globalIdxY + (globalIdxY < 0) - (globalIdxY >= Y))*((globalIdxY < 0 || globalIdxY >= Y))) * X;
       
         shared[stride] = d_e[globalIdx];
         sharedV[stride] = d_v[globalIdx];
@@ -180,15 +187,17 @@ __global__ void _2Dstencil_global(float *d_e, float *d_r, float *d_v, int X, int
     //         d_r[globalIdx] = shared[stride];
     // }
      __syncthreads();
-    
-         int sharedIdx = ((x%(blockDim.x))+times) + ((y%(blockDim.y))+times)*Dx;
+     int globalIdx = x + y * X;
+     int sharedIdx = ((x%(blockDim.x))+times) + ((y%(blockDim.y))+times)*Dx;
+     d_v[globalIdx] = sharedV[sharedIdx];
+         //int sharedIdx = ((x%(blockDim.x))+times) + ((y%(blockDim.y))+times)*Dx;
         // int sharedIdxX = (blockIdx.x * blockDim.x) + times; 
         // int sharedIdxY = (blockIdx.y * blockDim.y) + times;
         // int sharedIdx = sharedIdxX + sharedIdxY*Dx;
         //int sharedIdx = ((x%(blockDim.x))+times) + ((y%(blockDim.y))+times)*Dx;
-         int globalIdx = x + y * X;
+         //int globalIdx = x + y * X;
          //if(blockIdx.x == 0 && blockIdx.y ==1)
-          d_v[globalIdx] = sharedV[sharedIdx];
+          //d_v[globalIdx] = sharedV[sharedIdx];
     
    
 }
@@ -198,7 +207,8 @@ int main(int argc, char *argv[])
     /*
     Declarações e valores padroes
     */
-    float *h_e, *h_r, *h_v;
+    //float *h_e, *h_r, *h_v;
+    float *h_e, *h_v;
     float *d_e, *d_r, *d_v;
     int size, sharedSize;
     int X = 32;
@@ -227,15 +237,23 @@ int main(int argc, char *argv[])
         globalTimes = atoi(argv[3]);
     }
 
+    if (argc > 4)
+    {
+        BX = atoi(argv[4]);
+    }
+
+    if (argc > 5)
+    {
+        BY = atoi(argv[5]);
+    }
+
     if (X > 32)
     {
-        GX = ceil((float)X / (float)32);
-        BX = 32;
+        GX = ceil((float)X / (float)BX);
     }
     if (Y > 32)
     {
-        GY = ceil((float)Y / (float)32);
-        BY = 32;
+        GY = ceil((float)Y / (float)BY);
     }
 
     /*
@@ -244,13 +262,13 @@ int main(int argc, char *argv[])
     dim3 block_dim(BX, BY, 1);
     dim3 grid_dim(GX, GY, 1);
     //sharedSize = ((block_dim.x+k)*(block_dim.y+k))*sizeof(int);
-    sharedSize = ((block_dim.x + (2 * times)) * (block_dim.y + (2 * times))) * sizeof(float) * 3;
+    sharedSize = ((BX + (2 * times)) * (BY + (2 * times))) * sizeof(float) * 3;
     //sharedTam = ((block_dim.x+(k*2))*(block_dim.y+(k*2)));
     size = X * Y * sizeof(float);
     //tam = X * Y;
 
     h_e = (float *)malloc(size);
-    h_r = (float *)malloc(size);
+    //h_r = (float *)malloc(size);
     h_v = (float *)malloc(size);
     cudaMalloc(&d_e, size);
     cudaMalloc(&d_r, size);
@@ -312,7 +330,7 @@ int main(int argc, char *argv[])
     err = cudaGetLastError();
     if (err != cudaSuccess)
     {
-        fprintf(stderr, "Failed to launch _3Dstencil_global kernel (error code %s)!\n", cudaGetErrorString(err));
+        fprintf(stderr, "Failed to launch _2Dstencil_global kernel (error code %s)!\n", cudaGetErrorString(err));
     }
     /******************
     *** Kernel Call ***
@@ -330,11 +348,13 @@ int main(int argc, char *argv[])
     cudaEventDestroy(stop);
 
     //printf("X %d || Y %d \nBX %d || BY %d \n",X,Y,BX,BY);
-    //printf ("[%d,%.5f],\n", tam,elapsedTime);
+    //printf ("[%d,%.5f], sharedSize %d  CPUMem = %d bytes  GPUMen = %d bytes\n", times,elapsedTime,sharedSize,size*2,size*3);
+    //printf("GPU elapsed time: %f s (%f milliseconds)\n", (elapsedTime/1000.0), elapsedTime);
+    printf ("[%d,%.5f]",times,elapsedTime);
     /*
     Copia o resultado de volta para o CPU
     */
-    cudaMemcpy(h_r, d_e, size, cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_e, d_e, size, cudaMemcpyDeviceToHost);
     /*
     Copia o resultado para a imagem de visualização
     A estrutura de 
@@ -344,17 +364,18 @@ int main(int argc, char *argv[])
     {
         for (int j = 0; j < Y; j++)
         {
-            fprintf(arq," %6.4f",h_r[i+j*X]);
+            fprintf(arq," %6.4f \n",h_e[i+j*X]);
         }
-        fprintf(arq,"\n");
+        //fprintf(arq,"\n");
     }
     fclose(arq);
         
 
     cudaFree(d_e);
     cudaFree(d_r);
+    cudaFree(d_v);
     std::free(h_e);
-    std::free(h_r);
+    std::free(h_v);
 
     return 0;
 } /* main */

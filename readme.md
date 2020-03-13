@@ -4,17 +4,28 @@
 [Link para o notebook do colab](readmeContent/colabNotebook.ipynb)
 
 ## Tarefas:
-
 - Implementar versão Karma em CPU(openMP)
-- Descobrir o motivo de não conseguir mais do que 1024x1024 modelSize
-- Dar uma breve pesquisada em mais papers
-- Fazer os trabalhos relacionados
 - Reescrever implementação em português e testar essa abordagem (continuação)
+
+
+- Trocar os gráficos de desempenho e adicionar os testes como no paper do eduardo (Travar o numero de time steps e varias block, timesteps por kernel e dominio)
+- Focar em resultados e conclusão
+- Fazer os trabalhos relacionados
+
+
+
+## [12/03] ~ [15:00] -- [22:00]
+- Fazer a descrição da figura de varios instantes de tempo por chamada de kernel
+- adicionar subfigure com tamanho de 1 e 6 intantes de tempo
+- Reduzir a imagem para apenas 6 intantes de tempo
+- Alterações no texto 
+- Descobrir o motivo de não conseguir mais do que 1024x1024 modelSize (O karma original acima de 1024 começa a gerar valores nan, o spaceTime quando corrigi o problema q nao aceitava dominios maiores passou a ficar mais lento, na verdade nao sei o que esta acontecendo nao consigo mais gerar os mesmo resultados, não to entendendo mais nada)
 
 ## [11/03] ~ [18:30] -- [22:20]
 - Gerar possibilidade de 8x8, 16x6 e 32x32 para as figuras
 - Revisão da escrita na implementação
 - Reescrever implementação em português e testar essa abordagem
+- Dar uma breve pesquisada em mais papers
 
 
 ## [11/03] ~ [7:20] -- [13:00]

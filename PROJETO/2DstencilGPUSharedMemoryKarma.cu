@@ -28,15 +28,25 @@
 #ifndef MODEL_WIDTH
 #define MODEL_WIDTH 0
 #endif
+
 #define MODELSIZE_X (MODEL_WIDTH)
 #define MODELSIZE_Y (MODEL_WIDTH)
 #define MODELSIZE_Z 1
 #define MODELSIZE2D ( MODELSIZE_X*MODELSIZE_Y )
 
 //==> CUDA THREAD BLOCK <==//
-#define TILESIZE   32
-#define BLOCKDIM_X ( TILESIZE )
-#define BLOCKDIM_Y ( TILESIZE )
+//#define TILESIZE   32
+//#define BLOCKDIM_X ( TILESIZE )
+//#define BLOCKDIM_Y ( TILESIZE )
+
+#ifndef BLOCKDIM_X
+#define BLOCKDIM_X 32
+#endif
+
+#ifndef BLOCKDIM_Y
+#define BLOCKDIM_Y 32
+#endif
+
 #define BLOCKDIM_Z 1
 #define BLOCKDIM2D ( BLOCKDIM_X*BLOCKDIM_Y )
 
@@ -243,11 +253,12 @@ int main( int argc, char *argv[] )
     cudaEventSynchronize ( dstop );
     float elapsed;
     cudaEventElapsedTime( &elapsed, dstart, dstop );
-    printf("GPU elapsed time: %f s (%f milliseconds)\n", (elapsed/1000.0), elapsed);
+    //printf("GPU elapsed time: %f s (%f milliseconds)\n", (elapsed/1000.0), elapsed);
 
-    arq = fopen("TempoExecucaoOrig12000.txt", "a");
+    //arq = fopen("TempoExecucaoOrig12000.txt", "a");
     //printf("X %d || Y %d \nBX %d || BY %d \n",X,Y,BX,BY);
-        fprintf (arq,"[%d,%.5f],\n",MODEL_WIDTH,elapsed);
+        //fprintf (arq,"[%d,%.5f],\n",MODEL_WIDTH,elapsed);
+        printf ("[%d,%.5f]",0,elapsed);
     fclose(arq);
 
 
@@ -279,7 +290,7 @@ int main( int argc, char *argv[] )
     cudaDeviceSynchronize();
     gettimeofday(&timecheck, NULL);
     end = (long)timecheck.tv_sec * 1000 + (long)timecheck.tv_usec / 1000;
-    printf("CPU elapsed time: %f s (%ld milliseconds)\n", ((end - start)/1000.0), (end - start));
+    //printf("CPU elapsed time: %f s (%ld milliseconds)\n", ((end - start)/1000.0), (end - start));
     //
     cudaEventDestroy( dstart );
     cudaEventDestroy( dstop );
