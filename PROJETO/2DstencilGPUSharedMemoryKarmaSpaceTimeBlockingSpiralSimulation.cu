@@ -133,8 +133,9 @@ __global__ void _2Dstencil_global(float *d_e, float *d_r, float *d_v, int X, int
          int sharedIdxY = int(stride / Dx);
          int globalIdxX =(blockIdx.x * blockDim.x) + sharedIdxX - times;
          int globalIdxY =(blockIdx.y * blockDim.y) + sharedIdxY - times;
-         int globalIdx = globalIdxX + (globalIdxX < 0) - (globalIdxX >= X)  +  (globalIdxY + (globalIdxY < 0) - (globalIdxY >= Y)) * X;
-      
+         //int globalIdx = globalIdxX + (globalIdxX < 0) - (globalIdxX >= X)  +  (globalIdxY + (globalIdxY < 0) - (globalIdxY >= Y)) * X;
+         int globalIdx = globalIdxX + (-1*globalIdxX)*(globalIdxX < 0) - (globalIdxX-X+1)*(globalIdxX >= X)  +  (globalIdxY + (-1*globalIdxY)*(globalIdxY < 0) - (globalIdxY-Y+1)*(globalIdxY >= Y)) * X;
+       
         shared[stride] = d_e[globalIdx];
         sharedV[stride] = d_v[globalIdx];
     }

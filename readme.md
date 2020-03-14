@@ -7,15 +7,20 @@
 - Implementar versão Karma em CPU(openMP)
 - Reescrever implementação em português e testar essa abordagem (continuação)
 
-
-- Trocar os gráficos de desempenho e adicionar os testes como no paper do eduardo (Travar o numero de time steps e varias block, timesteps por kernel e dominio)
 - Focar em resultados e conclusão
 - Fazer os trabalhos relacionados
 
+## [13/03] ~ [8:00] -- [23:20]
+- Testes realizados
+- Trocar os gráficos de desempenho e adicionar os testes como no paper do eduardo (Travar o numero de time steps e varias block, timesteps por kernel e dominio)
+- Esquema de vizualização dos resultados
+- Melhora da figura de simulação espiral
+- Escrever resultados
 
 ## [12/03] ~ [24:00] -- [27:00]
 - realizar os testes usando 
 dominios
+
 256x256
 512x512
 1024x1024
