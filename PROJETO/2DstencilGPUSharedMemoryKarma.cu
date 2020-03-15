@@ -124,6 +124,7 @@ __global__ void timeStep( const float *voltIN, float *v, float *voltOUT )
 int main( int argc, char *argv[] )
 {
     int nsteps = 3; //8000;
+    bool resultado = false;
     // if ( argc > 1 ) 
     // {
     //     char *p;
@@ -143,15 +144,20 @@ int main( int argc, char *argv[] )
     {
         nsteps = atoi(argv[1]);
     }
+
+    if(argc > 2)
+    {
+        resultado = atoi(argv[2])==1;
+    }
     //
     cudaEvent_t dstart,dstop;
     cudaEventCreate( &dstart );
     cudaEventCreate( &dstop );
     //
-    long start, end;
-    struct timeval timecheck;
-    gettimeofday(&timecheck, NULL);
-    start = (long)timecheck.tv_sec * 1000 + (long)timecheck.tv_usec / 1000;
+    // long start, end;
+    // struct timeval timecheck;
+    // gettimeofday(&timecheck, NULL);
+    // start = (long)timecheck.tv_sec * 1000 + (long)timecheck.tv_usec / 1000;
     //
     float *hvolt, *hv;
     hvolt = (float*) malloc( MODELSIZE2D*sizeof(float) );
@@ -258,27 +264,31 @@ int main( int argc, char *argv[] )
     //arq = fopen("TempoExecucaoOrig12000.txt", "a");
     //printf("X %d || Y %d \nBX %d || BY %d \n",X,Y,BX,BY);
         //fprintf (arq,"[%d,%.5f],\n",MODEL_WIDTH,elapsed);
-        printf ("[%d,%.5f]",0,elapsed);
+        printf ("%.5f",elapsed);
     //fclose(arq);
 
 
 
-    // if ( (i%2) == 0 )
-    // HANDLE_ERROR( cudaMemcpy( hvolt, dvoltA, MODELSIZE2D*sizeof(float), cudaMemcpyDeviceToHost ) );
-    // else
-    // HANDLE_ERROR( cudaMemcpy( hvolt, dvoltB, MODELSIZE2D*sizeof(float), cudaMemcpyDeviceToHost ) );
+    if ( (i%2) == 0 )
+    HANDLE_ERROR( cudaMemcpy( hvolt, dvoltA, MODELSIZE2D*sizeof(float), cudaMemcpyDeviceToHost ) );
+    else
+    HANDLE_ERROR( cudaMemcpy( hvolt, dvoltB, MODELSIZE2D*sizeof(float), cudaMemcpyDeviceToHost ) );
 
 
-    // arq = fopen("resultado.txt", "wt");
-    // for(int i=0;i<MODELSIZE_X;i++)
-    // {
-    //     for(int j=0;j<MODELSIZE_Y;j++)
-    //     {
-    //         fprintf(arq," %6.4f",hvolt[i+j*MODELSIZE_X]);
-    //     }
-    //     fprintf(arq,"\n");
-    // }
-    // fclose(arq);
+    if(resultado)
+    {
+        arq = fopen("resultado.txt", "wt");
+        for(int i=0;i<MODELSIZE_X;i++)
+        {
+            for(int j=0;j<MODELSIZE_Y;j++)
+            {
+                fprintf(arq," %6.4f",hvolt[i+j*MODELSIZE_X]);
+            }
+            fprintf(arq,"\n");
+        }
+        fclose(arq);
+    }
+   
 
 
     //fclose( prof );

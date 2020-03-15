@@ -1,0 +1,41 @@
+
+-----------
+
+-----------
+
+ blockSizes
+[(4, 8), (4, 16), (4, 32), (4, 128), (4, 256), (8, 8), (8, 16), (8, 64), (8, 128), (16, 16), (16, 32), (16, 64), (32, 32)]
+
+ timeSteps
+[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+
+ dominios
+[(4096, 4096), (8192, 8192)]
+dominios = []
+blockSizesClassic = []
+blockSizesClassic.append(((4, 8),31871.31836))
+blockSizesClassic.append(((4, 16),21173.11914))
+blockSizesClassic.append(((4, 32),20166.63672))
+blockSizesClassic.append(((4, 128),16948.84180))
+blockSizesClassic.append(((4, 256),17066.24609))
+blockSizesClassic.append(((8, 8),23922.60156))
+blockSizesClassic.append(((8, 16),21274.08008))
+blockSizesClassic.append(((8, 64),18689.01172))
+blockSizesClassic.append(((8, 128),18654.36719))
+blockSizesClassic.append(((16, 16),21472.64844))
+blockSizesClassic.append(((16, 32),20515.55664))
+blockSizesClassic.append(((16, 64),19233.26758))
+blockSizesClassic.append(((32, 32),21588.93750))
+blockSizesOur = []
+timeSteps = []
+timeSteps.append((1,32686.35938))
+timeSteps.append((2,32811.56641))
+timeSteps.append((3,39008.62109))
+timeSteps.append((4,46776.53125))
+timeSteps.append((5,56581.91797))
+timeSteps.append((6,68289.17188))
+timeSteps.append((7,90634.69531))
+timeSteps.append((8,120794.98438))
+timeSteps.append((9,153149.82812))
+timeSteps.append((10,197859.01562))
+timeSteps.append((11,259311.09375))
