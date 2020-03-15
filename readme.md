@@ -10,6 +10,10 @@
 - Focar em resultados e conclusão
 - Fazer os trabalhos relacionados
 
+## [14/03] ~ [15:00] -- [22:14]
+- Trabalhando nos resultados para melhorar a vizualização dos gráficos
+- Escrevendo na secção dos resultados
+
 ## [13/03] ~ [8:00] -- [23:20]
 - Testes realizados
 - Trocar os gráficos de desempenho e adicionar os testes como no paper do eduardo (Travar o numero de time steps e varias block, timesteps por kernel e dominio)
