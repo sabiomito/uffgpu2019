@@ -115,17 +115,23 @@ os.system(string)
 
 
 blockSizes = []
-'''
+blockSizes.append((2, 16))
+blockSizes.append((2, 32))
+blockSizes.append((2, 64))
+blockSizes.append((2, 128))
+blockSizes.append((2, 256))
+blockSizes.append((2, 512))
 blockSizes.append((4, 8))
 blockSizes.append((8, 8))
+blockSizes.append((8, 32))
 blockSizes.append((4, 16))
+blockSizes.append((4, 64))
 blockSizes.append((4, 32))
 blockSizes.append((32, 32))
 blockSizes.append((8, 16))
 blockSizes.append((16, 16))
 blockSizes.append((16, 32))
 blockSizes.append((8, 64))
-'''
 blockSizes.append((8, 128))
 blockSizes.append((16, 64))
 blockSizes.append((4, 128))
@@ -138,17 +144,19 @@ timeSteps = list(range(1,15))
 print(timeSteps)
 
 dominios = []
-#dominios.append((96,96))
+dominios.append((96,96))
 dominios.append((256,256))
 dominios.append((512,512))
 dominios.append((1024,1024))
-#dominios.append((2048,2048))
-#dominios.append((4096,4096))
-#dominios.append((8192,8192))
+dominios.append((2048,2048))
+dominios.append((4096,4096))
+dominios.append((8192,8192))
+
 
 print(dominios)
 
-arquivo = open('testeParaResolverProblemaDeDesempenhoDepoisDeColocarDefinesNoSharedTambemInline.txt', 'wt')
+nomeArquivo = 'MaiorTesteDeTodosOsTempos.txt'
+arquivo = open(nomeArquivo, 'wt')
 #arquivo.write("\n-----------\n")
 #arquivo.write("\n-----------\n")
 #arquivo.write("\n blockSizes\n"+str(blockSizes)+"\n")
@@ -198,3 +206,18 @@ for domain in dominios:
   print("dominios.append(("+str(domain)+",(blockSizesClassic,blockSizesOur)))")
 
 arquivo.close()
+
+
+def enviaArquivo(path):
+    from ftplib import FTP 
+    import os
+    import fileinput
+    ftp = FTP()
+    ftp.set_debuglevel(2)
+    ftp.connect('cobrinha-do-mito.freetzi.com', 21) 
+    ftp.login('cobrinha-do-mito.freetzi.com','32431404')
+    ftp.cwd('/uploads')
+    fp = open("/home/cpires/paperDoCoracao/uffgpu2019/PROJETO/"+path, 'rb')
+    ftp.storbinary('STOR %s' % os.path.basename("/home/cpires/paperDoCoracao/uffgpu2019/PROJETO/"+path), fp, 1024)
+
+enviaArquivo(nomeArquivo)
