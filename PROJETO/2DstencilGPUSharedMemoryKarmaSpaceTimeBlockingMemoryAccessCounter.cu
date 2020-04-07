@@ -47,9 +47,10 @@ using namespace std;
 #define BLOCKDIM_X 32
 #endif
 
-#ifndef GLOBAL
-#define GLOBAL 0
+#ifndef MEM_TYPE
+#define MEM_TYPE 0
 #endif
+
 
 #ifndef BLOCKDIM_Y
 #define BLOCKDIM_Y 32
@@ -277,9 +278,9 @@ int main(int argc, char *argv[])
     //cudaMemcpy(h_e, d_e, MODELSIZE2D*sizeof(float), cudaMemcpyDeviceToHost);
     cudaMemcpy(h_sharedAcesses, d_sharedAcesses,sizeof(int), cudaMemcpyDeviceToHost);
     cudaMemcpy(h_globalAcesses, d_globalAcesses,sizeof(int), cudaMemcpyDeviceToHost);
-    if(GLOBAL)
+    if(MEM_TYPE == 0)
     printf ("%d",*h_globalAcesses);
-    else
+    else if(MEM_TYPE == 1)
     printf ("%d",*h_sharedAcesses);
     cudaFree(d_e);
     cudaFree(d_r);
